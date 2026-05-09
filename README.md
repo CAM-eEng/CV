@@ -11,7 +11,7 @@ See `docs/superpowers/specs/2026-05-09-cv-design.md` for the full design.
 bun install
 bun run dev          # http://localhost:4321
 bun run build        # production build → ./dist
-bun test             # unit tests
+bun run test         # unit tests (use 'bun run test', not 'bun test')
 bun run test:e2e     # Playwright
 bun run lint
 ```

@@ -1,0 +1,9 @@
+bun.lock
+dist/
+.astro/
+node_modules/
+docs/
+READ-BEFORE-BURNING.md
+public/favicon.svg
+playwright-report/
+test-results/
