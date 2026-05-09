@@ -1,0 +1,57 @@
+basics:
+  name: Cameron Hartman
+  label: Firmware / Embedded Engineer
+  email: cameron.hartman081@gmail.com
+  url: https://cameronhartman.dev
+  summary: |
+    Firmware and embedded systems engineer with experience across CircuitPython,
+    STM32, and full-stack web. (Replace this placeholder summary with current bio.)
+  location:
+    city: San Jose
+    region: CA
+    countryCode: US
+  profiles:
+    - network: GitHub
+      username: CAM-eEng
+      url: https://github.com/CAM-eEng
+    - network: LinkedIn
+      username: cameronhartman
+      url: https://www.linkedin.com/in/cameronhartman/
+
+work:
+  - name: Litepoint
+    position: Firmware Engineer
+    url: https://www.litepoint.com
+    startDate: '2020-06'
+    summary: |
+      (Placeholder — replace with current work summary.)
+    highlights:
+      - Placeholder highlight; replace with real impact statement.
+
+education:
+  - institution: University of Ottawa
+    area: Electrical Engineering
+    studyType: BASc
+    startDate: '2014-09'
+    endDate: '2019-04'
+
+skills:
+  - name: Embedded
+    keywords: [CircuitPython, STM32, HAL, FreeRTOS]
+  - name: Frontend
+    keywords: [TypeScript, React, Astro, Tailwind]
+  - name: Languages
+    keywords: [Python, Rust, Java, Dart]
+
+projects:
+  - name: LedDisplay
+    description: CircuitPython matrix clock on Adafruit Matrix Portal S3.
+    keywords: [CircuitPython, RGB matrix, embedded]
+    startDate: '2026-04'
+    url: https://github.com/CAM-eEng/LedDisplay
+    featured: true
+  - name: 5easy
+    description: D&D 5e character manager web app.
+    keywords: [TypeScript, React, Supabase]
+    startDate: '2026-04'
+    featured: true
