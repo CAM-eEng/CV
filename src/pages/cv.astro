@@ -1,12 +1,17 @@
 ---
 import Base from '~/layouts/Base.astro';
 import { loadCV } from '~/lib/content/cv-loader';
+import JsonLd from '~/components/JsonLd.astro';
+import { personJsonLd } from '~/lib/jsonld/person';
+import { workExperienceJsonLd } from '~/lib/jsonld/work-experience';
 import { resolve } from 'node:path';
 
 const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
+const ld = [personJsonLd(cv), ...workExperienceJsonLd(cv)];
 ---
 
 <Base title={`CV — ${cv.basics.name}`} description={`Full CV for ${cv.basics.name}`}>
+  <JsonLd data={ld} slot="head" />
   <article class="prose prose-neutral dark:prose-invert max-w-none">
     <header class="not-prose mb-8 flex flex-wrap items-baseline justify-between gap-4">
       <div>
