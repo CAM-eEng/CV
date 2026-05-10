@@ -1,0 +1,115 @@
+---
+import Base from '~/layouts/Base.astro';
+import { loadCV } from '~/lib/content/cv-loader';
+import { resolve } from 'node:path';
+
+const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
+---
+
+<Base title={`CV — ${cv.basics.name}`} description={`Full CV for ${cv.basics.name}`}>
+  <article class="prose prose-neutral dark:prose-invert max-w-none">
+    <header class="not-prose mb-8 flex flex-wrap items-baseline justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight">{cv.basics.name}</h1>
+        <p class="text-neutral-600 dark:text-neutral-400">{cv.basics.label}</p>
+      </div>
+      <div class="flex gap-3 text-sm">
+        <a href="/cv.json" class="font-mono underline underline-offset-4">cv.json</a>
+        <span class="text-neutral-400">·</span>
+        <a href={`mailto:${cv.basics.email}`} class="underline underline-offset-4"
+          >{cv.basics.email}</a
+        >
+      </div>
+    </header>
+
+    <section>
+      <h2>Summary</h2>
+      <p>{cv.basics.summary}</p>
+    </section>
+
+    <section>
+      <h2>Work</h2>
+      {
+        cv.work.map((w) => (
+          <article class="mb-6">
+            <header class="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <strong>{w.position}</strong>
+                <span class="text-neutral-500"> · </span>
+                <span class="font-mono">{w.name}</span>
+              </div>
+              <span class="text-sm text-neutral-500 font-mono">
+                {w.startDate}
+                {w.endDate ? `–${w.endDate}` : '–present'}
+              </span>
+            </header>
+            {w.summary && <p class="mt-2">{w.summary}</p>}
+            {w.highlights.length > 0 && (
+              <ul class="mt-2">
+                {w.highlights.map((h) => (
+                  <li>{h}</li>
+                ))}
+              </ul>
+            )}
+          </article>
+        ))
+      }
+    </section>
+
+    <section>
+      <h2>Education</h2>
+      {
+        cv.education.map((e) => (
+          <p>
+            <strong>
+              {e.studyType}, {e.area}
+            </strong>{' '}
+            · <span class="font-mono">{e.institution}</span>
+            <span class="text-neutral-500">
+              {' '}
+              · {e.startDate}
+              {e.endDate ? `–${e.endDate}` : ''}
+            </span>
+          </p>
+        ))
+      }
+    </section>
+
+    <section>
+      <h2>Skills</h2>
+      <ul>
+        {
+          cv.skills.map((s) => (
+            <li>
+              <strong>{s.name}:</strong> {s.keywords.join(', ')}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      cv.projects.length > 0 && (
+        <section>
+          <h2>Projects</h2>
+          <ul>
+            {cv.projects.map((p) => (
+              <li>
+                <strong>{p.name}</strong> — {p.description}
+                {p.url && (
+                  <>
+                    {' '}
+                    ·{' '}
+                    <a href={p.url} class="underline underline-offset-4">
+                      link
+                    </a>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </article>
+</Base>
