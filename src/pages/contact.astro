@@ -1,0 +1,31 @@
+---
+import Base from '~/layouts/Base.astro';
+import { loadCV } from '~/lib/content/cv-loader';
+import { resolve } from 'node:path';
+
+const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
+---
+
+<Base title="Contact" description="Get in touch">
+  <h1 class="text-3xl font-semibold tracking-tight mb-6">Contact</h1>
+  <ul class="space-y-3">
+    <li>
+      <span class="text-neutral-500 font-mono text-sm w-20 inline-block">email</span>
+      <a href={`mailto:${cv.basics.email}`} class="underline underline-offset-4"
+        >{cv.basics.email}</a
+      >
+    </li>
+    {
+      cv.basics.profiles.map((p) => (
+        <li>
+          <span class="text-neutral-500 font-mono text-sm w-20 inline-block">
+            {p.network.toLowerCase()}
+          </span>
+          <a href={p.url} class="underline underline-offset-4">
+            {p.username}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

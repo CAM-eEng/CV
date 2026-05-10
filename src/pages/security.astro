@@ -1,0 +1,48 @@
+---
+import Base from '~/layouts/Base.astro';
+---
+
+<Base title="Security & privacy" description="How this site handles your data and AI keys">
+  <article class="prose prose-neutral dark:prose-invert max-w-none">
+    <h1>Security &amp; privacy</h1>
+
+    <p class="lead">
+      This site is fully static — no server, no database, no analytics that fingerprint you. The
+      interactive AI features use a Bring-Your-Own-Key model so the bill stays with you, not me.
+    </p>
+
+    <h2>What we don't collect</h2>
+    <ul>
+      <li>No accounts, no sign-in, no cookies set by us.</li>
+      <li>No analytics, no third-party trackers.</li>
+      <li>No server logs of your requests (there's no server).</li>
+    </ul>
+
+    <h2>How AI features work (Plan 2)</h2>
+    <p>
+      When you connect an AI account (OpenRouter OAuth, or paste a direct provider key), the
+      credential lives in your browser's <code>sessionStorage</code> only — it vanishes when you close
+      the tab. Calls go from your browser directly to the provider you chose; my site is never in the
+      credential path.
+    </p>
+    <p>
+      Browser extensions and compromised tabs can read <code>sessionStorage</code>. If you don't
+      trust the browser session you're in, use demo mode instead.
+    </p>
+
+    <h2>How the data on this site is sourced</h2>
+    <p>
+      The CV body is hand-authored YAML in the
+      <a href="https://github.com/CAM-eEng/CV">repo</a>. The activity visualizer (Plan 3) snapshots
+      GitHub and HackTheBox public data nightly via a build job.
+    </p>
+
+    <h2>Reporting</h2>
+    <p>
+      Found something? Email <a href="mailto:cameron.hartman081@gmail.com"
+        >cameron.hartman081@gmail.com</a
+      >
+      or open an issue on the public repo.
+    </p>
+  </article>
+</Base>
