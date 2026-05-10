@@ -1,0 +1,32 @@
+---
+const path = Astro.url.pathname;
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/cv', label: 'CV' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+
+<nav class="border-b border-neutral-200 dark:border-neutral-800">
+  <div class="mx-auto max-w-3xl px-6 py-4 flex items-center justify-between">
+    <a href="/" class="font-mono font-semibold tracking-tight">cameron hartman</a>
+    <ul class="flex gap-6 text-sm">
+      {
+        links.map((l) => (
+          <li>
+            <a
+              href={l.href}
+              class:list={[
+                'hover:underline underline-offset-4',
+                path === l.href && 'font-semibold',
+              ]}
+            >
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
