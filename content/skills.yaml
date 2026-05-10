@@ -1,0 +1,22 @@
+categories:
+  - name: Embedded
+    skills:
+      - { name: CircuitPython, last_used: '2026-05', level: Proficient }
+      - { name: STM32 (HAL/Cube), last_used: '2024-09', level: Working }
+      - { name: ESP32 / ESP-IDF, last_used: '2025-08', level: Working }
+  - name: Frontend
+    skills:
+      - { name: TypeScript, last_used: '2026-05', level: Proficient }
+      - { name: React, last_used: '2026-04', level: Proficient }
+      - { name: Astro, last_used: '2026-05', level: Working }
+      - { name: Tailwind CSS, last_used: '2026-05', level: Proficient }
+  - name: Languages
+    skills:
+      - { name: Python, last_used: '2026-05', level: Proficient }
+      - { name: Rust, last_used: '2024-12', level: Familiar }
+      - { name: Java, last_used: '2026-01', level: Working }
+      - { name: Dart / Flutter, last_used: '2026-04', level: Working }
+  - name: Tooling
+    skills:
+      - { name: Git / GitHub Actions, last_used: '2026-05', level: Proficient }
+      - { name: Linux, last_used: '2026-05', level: Proficient }
