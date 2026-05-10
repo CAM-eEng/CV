@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./src', import.meta.url)),
+      'astro:content': fileURLToPath(new URL('./tests/mocks/astro-content.ts', import.meta.url)),
     },
   },
 });
