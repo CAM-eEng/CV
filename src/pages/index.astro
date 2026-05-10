@@ -1,0 +1,54 @@
+---
+import Base from '~/layouts/Base.astro';
+import { loadCV } from '~/lib/content/cv-loader';
+import { resolve } from 'node:path';
+
+const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
+const featuredWork = cv.work.slice(0, 3);
+---
+
+<Base
+  title={`${cv.basics.name} — ${cv.basics.label}`}
+  description={cv.basics.summary.slice(0, 160)}
+>
+  <section class="py-8">
+    <h1 class="text-4xl font-semibold tracking-tight">{cv.basics.name}</h1>
+    <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">{cv.basics.label}</p>
+    <p class="mt-6 max-w-prose leading-relaxed">{cv.basics.summary}</p>
+  </section>
+
+  <section class="py-8">
+    <h2 class="text-sm uppercase tracking-wider text-neutral-500 mb-4">Recent</h2>
+    <ul class="space-y-3">
+      {
+        featuredWork.map((w) => (
+          <li class="flex items-baseline justify-between gap-4">
+            <div>
+              <span class="font-medium">{w.position}</span>
+              <span class="text-neutral-500"> at </span>
+              <span class="font-mono">{w.name}</span>
+            </div>
+            <span class="text-sm text-neutral-500 font-mono">
+              {w.startDate}
+              {w.endDate ? `–${w.endDate}` : '–present'}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="py-8">
+    <a
+      href="/cv"
+      class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+    >
+      View full CV →
+    </a>
+  </section>
+
+  <!-- Chat island placeholder; lands in Plan 2 -->
+  <section class="py-8" data-island="chat-stub">
+    <p class="text-sm text-neutral-500 italic">Chat-with-CV launches in Plan 2.</p>
+  </section>
+</Base>
