@@ -1,0 +1,39 @@
+---
+import Base from '~/layouts/Base.astro';
+---
+
+<Base title="Not found · Cameron Hartman" description="The page you tried to open doesn't exist.">
+  <section class="py-20 text-center">
+    <p class="font-mono text-sm uppercase tracking-widest text-neutral-500 mb-4">404</p>
+    <h1 class="text-4xl font-semibold tracking-tight mb-4">That page isn't here.</h1>
+    <p class="max-w-md mx-auto text-neutral-600 dark:text-neutral-400 mb-10">
+      Either it moved, never existed, or the URL has a typo. Try one of these instead.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+      <a
+        href="/"
+        class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        Home
+      </a>
+      <a
+        href="/cv"
+        class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        Full CV
+      </a>
+      <a
+        href="/projects"
+        class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        Projects
+      </a>
+      <a
+        href="/playground"
+        class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        AI playground
+      </a>
+    </div>
+  </section>
+</Base>

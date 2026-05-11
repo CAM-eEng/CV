@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "audit": "bun pm audit"
+    "audit": "bun pm audit",
+    "refresh-activity": "bun run scripts/refresh-activity.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.76",
