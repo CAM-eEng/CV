@@ -52,7 +52,7 @@ export function ContributionHeatmap({ days }: Props) {
         viewBox={`0 0 ${WEEKS * (CELL + GAP)} ${ROWS * (CELL + GAP)}`}
         role="img"
         aria-label="GitHub contributions over the last year"
-        className="w-full max-w-2xl"
+        className="w-full"
       >
         {cells.map((c) => (
           <rect
