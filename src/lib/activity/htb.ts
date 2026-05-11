@@ -140,20 +140,51 @@ export async function fetchHtbStats(opts: { token: string; userId?: string }): P
     );
   }
 
-  const profileRes = await htbFetch(`/profile/${userId}`, opts.token);
-  if (!profileRes.ok)
-    throw new Error(`HTB profile error (${profileRes.status}): ${await profileRes.text()}`);
-  const profile = ProfileSchema.parse(await profileRes.json());
+  // HTB v4 has moved profile endpoints around over the years. Try the current
+  // canonical path first, then known older variants. First 2xx wins.
+  const PROFILE_PATHS = [
+    `/user/profile/basic/${userId}`,
+    `/user/profile/info/${userId}`,
+    `/profile/${userId}`,
+  ];
+  let profile: ReturnType<typeof ProfileSchema.parse> | null = null;
+  const attempts: Array<{ path: string; status: number }> = [];
+  for (const p of PROFILE_PATHS) {
+    const res = await htbFetch(p, opts.token);
+    attempts.push({ path: p, status: res.status });
+    if (res.ok) {
+      try {
+        profile = ProfileSchema.parse(await res.json());
+        console.log(`HTB: profile resolved via ${p}.`);
+        break;
+      } catch {
+        // schema didn't match this endpoint's shape; keep trying
+      }
+    }
+  }
+  if (!profile) {
+    throw new Error(
+      `HTB profile lookup exhausted all known endpoints: ${attempts
+        .map((a) => `${a.path}=${a.status}`)
+        .join(', ')}`,
+    );
+  }
 
-  const catsRes = await htbFetch(`/profile/progress/categories/${userId}`, opts.token);
+  const CATEGORY_PATHS = [
+    `/user/profile/progress/categories/${userId}`,
+    `/profile/progress/categories/${userId}`,
+  ];
   let categories: Record<string, number> = {};
-  if (catsRes.ok) {
-    try {
-      const parsed = CategoryStatsSchema.parse(await catsRes.json());
-      categories = parsed.profile?.ranking_bracket?.categories ?? {};
-    } catch {
-      // Schema drift — silently drop, keep last-known-good in repo.
-      categories = {};
+  for (const p of CATEGORY_PATHS) {
+    const res = await htbFetch(p, opts.token);
+    if (res.ok) {
+      try {
+        const parsed = CategoryStatsSchema.parse(await res.json());
+        categories = parsed.profile?.ranking_bracket?.categories ?? {};
+        break;
+      } catch {
+        // schema drift — silently drop; last-known-good stays
+      }
     }
   }
 
