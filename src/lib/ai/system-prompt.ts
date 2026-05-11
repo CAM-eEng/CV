@@ -7,11 +7,7 @@ export function buildSystemPrompt(cv: CV): string {
         .map((h, hi) => `  - [work.${wi}.highlights.${hi}] ${h}`)
         .join('\n');
       const period = w.endDate ? `${w.startDate}–${w.endDate}` : `${w.startDate}–present`;
-      return [
-        `### ${w.position} at ${w.name} (${period})`,
-        w.summary,
-        highlights,
-      ].join('\n');
+      return [`### ${w.position} at ${w.name} (${period})`, w.summary, highlights].join('\n');
     })
     .join('\n\n');
 
