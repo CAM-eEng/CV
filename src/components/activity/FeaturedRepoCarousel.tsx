@@ -14,11 +14,16 @@ function relativeDate(iso: string): string {
   return `${Math.floor(days / 365)}y ago`;
 }
 
+export function filterFeaturedRepos(
+  repos: Activity['repos'],
+  projects: CV['projects'],
+): Activity['repos'] {
+  const names = new Set(projects.filter((p) => p.featured).map((p) => p.name.toLowerCase()));
+  return repos.filter((r) => names.has(r.name.toLowerCase()));
+}
+
 export function FeaturedRepoCarousel({ repos, projects }: Props) {
-  const featuredNames = new Set(
-    projects.filter((p) => p.featured).map((p) => p.name.toLowerCase()),
-  );
-  const cards = repos.filter((r) => featuredNames.has(r.name.toLowerCase()));
+  const cards = filterFeaturedRepos(repos, projects);
   if (!cards.length) return null;
 
   return (
