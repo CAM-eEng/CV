@@ -2,8 +2,8 @@ import type { AIProvider, ChatChunk, ChatOpts, ModelInfo, StructuredOpts } from 
 
 const ANSWERS: Array<{ keywords: RegExp; text: string }> = [
   {
-    keywords: /\b(ai|llm|machine learning|regression ai agent|snowflake|azure)\b/i,
-    text: `At LitePoint, Cameron is leading the engineering team's first AI project — the "Regression AI Agent" — built on Snowflake, Azure Blob Storage, and Python [work.0.highlights.4]. This is a fresh initiative as of 2026 and reflects a broader push at LitePoint into ML-augmented test automation. Cameron's hands-on AI experience pairs with a long firmware background, which gives him an unusual angle: he can connect ML pipelines back to the physical RF test instruments they're meant to support.`,
+    keywords: /\b(ai|llm|machine learning|regression ai agent|snowflake|azure|copilot)\b/i,
+    text: `At LitePoint, Cameron is leading the engineering team's first AI project — the "Regression AI Agent" — built on Snowflake, Azure Blob Storage, Python, and Copilot Studio [work.0.highlights.4]. This is a fresh initiative as of 2026 and reflects a broader push at LitePoint into ML-augmented test automation. Cameron's hands-on AI experience pairs with a long firmware/hardware-debugging background, which gives him an unusual angle: he can connect ML pipelines back to the physical RF test instruments they're meant to support.`,
   },
   {
     keywords: /\b(devops|docker|jenkins|ci|cd)\b/i,
