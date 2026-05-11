@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default [
-  { ignores: ['dist/', '.astro/', 'node_modules/'] },
+  { ignores: ['dist/**', '.astro/**', 'node_modules/**', '.claude/**', '.tmp/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
