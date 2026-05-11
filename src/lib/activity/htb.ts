@@ -1,28 +1,44 @@
 import { z } from 'zod';
 
-const HTB_BASE = 'https://www.hackthebox.com/api/v4';
+// HackTheBox migrated their REST API from www.hackthebox.com to labs.hackthebox.com
+// at some point in 2023–24. The old host returns 404 with an empty body for every
+// /api/v4/user/* path; the new host serves them. Source: D3vil0p3r/HackTheBox-API
+// community docs + recent PyHackTheBox commits referencing the labs subdomain.
+const HTB_BASE = 'https://labs.hackthebox.com/api/v4';
 
+// Profile response shape per Propolisa/htb-api-docs (community-maintained mirror
+// of HTB's published Postman collection). The full payload has 30+ fields; we
+// keep only the ones we need and let everything else pass through.
 const ProfileSchema = z
   .object({
     profile: z
       .object({
+        id: z.number().int().optional(),
         rank: z.string().optional(),
         points: z.number().int().optional(),
-        owns: z.object({ machines: z.number().int().optional() }).optional(),
+        user_owns: z.number().int().optional(),
+        system_owns: z.number().int().optional(),
       })
       .passthrough(),
   })
   .passthrough();
 
-const CategoryStatsSchema = z
+// Challenge-category breakdown response shape. `challenge_categories` is an
+// array of { name, owned_flags, total_flags, ... }; we flatten to a
+// name -> owned_flags map for the dashboard's HtbStatsCard.
+const ChallengeCategoriesSchema = z
   .object({
     profile: z
       .object({
-        ranking_bracket: z
-          .object({
-            categories: z.record(z.string(), z.number().int()).optional(),
-          })
-          .passthrough()
+        challenge_categories: z
+          .array(
+            z
+              .object({
+                name: z.string(),
+                owned_flags: z.number().int().optional(),
+              })
+              .passthrough(),
+          )
           .optional(),
       })
       .passthrough(),
@@ -75,12 +91,6 @@ export function decodeJwtSub(token: string): string | null {
   }
 }
 
-/**
- * Inspect a JWT payload and return the list of top-level keys (claim names).
- * Used by the refresh script as a debugging aid when no recognised user-ID
- * claim is present — lets us see what HTB ships without ever logging the
- * actual claim values (i.e. without leaking any token contents).
- */
 export function jwtClaimNames(token: string): string[] {
   const parts = token.split('.');
   if (parts.length !== 3) return [];
@@ -95,103 +105,45 @@ export function jwtClaimNames(token: string): string[] {
   }
 }
 
-/**
- * As a last resort, ask HTB itself who the token belongs to. v4 of the API
- * exposes /user/info (and historically /users/me); we try both and return the
- * first numeric id we find. Returns null if neither endpoint yields one.
- */
-async function fetchHtbUserId(token: string): Promise<string | null> {
-  for (const path of ['/user/info', '/users/me']) {
-    try {
-      const res = await htbFetch(path, token);
-      if (!res.ok) continue;
-      const body = (await res.json()) as Record<string, unknown>;
-      // Look for id anywhere obvious: top level, nested in `info`, `user`, or `profile`.
-      const candidates: unknown[] = [
-        body.id,
-        (body.info as Record<string, unknown> | undefined)?.id,
-        (body.user as Record<string, unknown> | undefined)?.id,
-        (body.profile as Record<string, unknown> | undefined)?.id,
-      ];
-      for (const c of candidates) {
-        if ((typeof c === 'string' && c) || (typeof c === 'number' && Number.isFinite(c))) {
-          return String(c);
-        }
-      }
-    } catch {
-      // try next endpoint
-    }
-  }
-  return null;
-}
-
 export async function fetchHtbStats(opts: { token: string; userId?: string }): Promise<HtbStats> {
-  let userId = opts.userId ?? decodeJwtSub(opts.token);
+  const userId = opts.userId ?? decodeJwtSub(opts.token);
   if (!userId) {
     const claims = jwtClaimNames(opts.token);
-    console.log(
-      `HTB: no user-ID claim in JWT (found claims: [${claims.join(', ')}]). Falling back to /user/info.`,
-    );
-    userId = await fetchHtbUserId(opts.token);
-  }
-  if (!userId) {
     throw new Error(
-      'Could not determine HTB user ID from the token or /user/info — set HTB_USER_ID explicitly.',
+      `Could not determine HTB user ID. JWT claims present: [${claims.join(', ')}]. ` +
+        `Set HTB_USER_ID explicitly to the numeric ID from your HTB profile URL.`,
     );
   }
 
-  // HTB v4 has moved profile endpoints around over the years. Try the current
-  // canonical path first, then known older variants. First 2xx wins.
-  const PROFILE_PATHS = [
-    `/user/profile/basic/${userId}`,
-    `/user/profile/info/${userId}`,
-    `/profile/${userId}`,
-  ];
-  let profile: ReturnType<typeof ProfileSchema.parse> | null = null;
-  const attempts: Array<{ path: string; status: number }> = [];
-  for (const p of PROFILE_PATHS) {
-    const res = await htbFetch(p, opts.token);
-    attempts.push({ path: p, status: res.status });
-    if (res.ok) {
-      try {
-        profile = ProfileSchema.parse(await res.json());
-        console.log(`HTB: profile resolved via ${p}.`);
-        break;
-      } catch {
-        // schema didn't match this endpoint's shape; keep trying
-      }
-    }
+  const profileRes = await htbFetch(`/user/profile/basic/${userId}`, opts.token);
+  if (!profileRes.ok) {
+    throw new Error(`HTB profile error (${profileRes.status}): ${await profileRes.text()}`);
   }
-  if (!profile) {
-    throw new Error(
-      `HTB profile lookup exhausted all known endpoints: ${attempts
-        .map((a) => `${a.path}=${a.status}`)
-        .join(', ')}`,
-    );
-  }
+  const profile = ProfileSchema.parse(await profileRes.json());
 
-  const CATEGORY_PATHS = [
-    `/user/profile/progress/categories/${userId}`,
-    `/profile/progress/categories/${userId}`,
-  ];
+  // Per HTB's profile-card UI, the headline "machines owned" is the count of
+  // root pwns (system_owns). We surface that. If the field is absent on the
+  // profile (shouldn't happen on a normal account), fall back to user_owns.
+  const ownedMachines = profile.profile.system_owns ?? profile.profile.user_owns ?? 0;
+
   let categories: Record<string, number> = {};
-  for (const p of CATEGORY_PATHS) {
-    const res = await htbFetch(p, opts.token);
-    if (res.ok) {
-      try {
-        const parsed = CategoryStatsSchema.parse(await res.json());
-        categories = parsed.profile?.ranking_bracket?.categories ?? {};
-        break;
-      } catch {
-        // schema drift — silently drop; last-known-good stays
+  const catsRes = await htbFetch(`/user/profile/progress/challenges/${userId}`, opts.token);
+  if (catsRes.ok) {
+    try {
+      const parsed = ChallengeCategoriesSchema.parse(await catsRes.json());
+      for (const c of parsed.profile?.challenge_categories ?? []) {
+        if (c.owned_flags !== undefined) categories[c.name.toLowerCase()] = c.owned_flags;
       }
+    } catch {
+      // Schema drift — keep categories empty; last-known-good stays in repo.
+      categories = {};
     }
   }
 
   return {
     rank: profile.profile.rank ?? 'Unknown',
     points: profile.profile.points ?? 0,
-    ownedMachines: profile.profile.owns?.machines ?? 0,
+    ownedMachines,
     categories,
   };
 }
