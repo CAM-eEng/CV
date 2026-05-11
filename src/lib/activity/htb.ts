@@ -46,37 +46,97 @@ async function htbFetch(path: string, token: string): Promise<Response> {
   });
 }
 
+// Claim names HTB or other JWT-issuing services have been observed to use for
+// the user identifier. Order matters: first match wins.
+const USER_ID_CLAIMS = ['sub', 'id', 'user_id', 'userId', 'uid', 'nameid', 'uname'];
+
 /**
- * Decode the `sub` (subject) claim from a JWT without verifying the signature.
- * HackTheBox app tokens are JWTs whose `sub` is the user's numeric ID, so we
- * can derive the user ID from the token alone — no need for a separate
- * HTB_USER_ID secret.
- *
- * Returns null for malformed tokens, missing payloads, or non-JWT strings.
- * Caller is expected to fall back gracefully (or accept an explicit userId).
+ * Decode a user-identifier claim from a JWT without verifying the signature.
+ * We trust the token because it lives in our own repo secrets; the API call
+ * itself is the verification. Returns null when no recognised claim is found.
  */
 export function decodeJwtSub(token: string): string | null {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   try {
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-    const candidate =
-      (typeof payload.sub === 'string' || typeof payload.sub === 'number') && payload.sub
-        ? String(payload.sub)
-        : (typeof payload.id === 'string' || typeof payload.id === 'number') && payload.id
-          ? String(payload.id)
-          : null;
-    return candidate;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    for (const claim of USER_ID_CLAIMS) {
+      const v = payload[claim];
+      if ((typeof v === 'string' && v) || (typeof v === 'number' && Number.isFinite(v))) {
+        return String(v);
+      }
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
+/**
+ * Inspect a JWT payload and return the list of top-level keys (claim names).
+ * Used by the refresh script as a debugging aid when no recognised user-ID
+ * claim is present — lets us see what HTB ships without ever logging the
+ * actual claim values (i.e. without leaking any token contents).
+ */
+export function jwtClaimNames(token: string): string[] {
+  const parts = token.split('.');
+  if (parts.length !== 3) return [];
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    return Object.keys(payload);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * As a last resort, ask HTB itself who the token belongs to. v4 of the API
+ * exposes /user/info (and historically /users/me); we try both and return the
+ * first numeric id we find. Returns null if neither endpoint yields one.
+ */
+async function fetchHtbUserId(token: string): Promise<string | null> {
+  for (const path of ['/user/info', '/users/me']) {
+    try {
+      const res = await htbFetch(path, token);
+      if (!res.ok) continue;
+      const body = (await res.json()) as Record<string, unknown>;
+      // Look for id anywhere obvious: top level, nested in `info`, `user`, or `profile`.
+      const candidates: unknown[] = [
+        body.id,
+        (body.info as Record<string, unknown> | undefined)?.id,
+        (body.user as Record<string, unknown> | undefined)?.id,
+        (body.profile as Record<string, unknown> | undefined)?.id,
+      ];
+      for (const c of candidates) {
+        if ((typeof c === 'string' && c) || (typeof c === 'number' && Number.isFinite(c))) {
+          return String(c);
+        }
+      }
+    } catch {
+      // try next endpoint
+    }
+  }
+  return null;
+}
+
 export async function fetchHtbStats(opts: { token: string; userId?: string }): Promise<HtbStats> {
-  const userId = opts.userId ?? decodeJwtSub(opts.token);
+  let userId = opts.userId ?? decodeJwtSub(opts.token);
+  if (!userId) {
+    const claims = jwtClaimNames(opts.token);
+    console.log(
+      `HTB: no user-ID claim in JWT (found claims: [${claims.join(', ')}]). Falling back to /user/info.`,
+    );
+    userId = await fetchHtbUserId(opts.token);
+  }
   if (!userId) {
     throw new Error(
-      'Could not determine HTB user ID: pass userId explicitly or use a JWT app token with a sub/id claim.',
+      'Could not determine HTB user ID from the token or /user/info — set HTB_USER_ID explicitly.',
     );
   }
 
