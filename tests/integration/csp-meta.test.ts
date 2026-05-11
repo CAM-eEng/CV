@@ -23,3 +23,17 @@ describe('Base layout CSP meta', () => {
     expect(file).not.toMatch(/script-src[^;]*'unsafe-inline'/);
   });
 });
+
+describe('CSP in built HTML', () => {
+  it('emits Content-Security-Policy meta on /cv', async () => {
+    const file = await readFile(resolve(__dirname, '../../dist/cv/index.html'), 'utf8');
+    expect(file).toMatch(/http-equiv="Content-Security-Policy"/);
+    expect(file).toContain('https://api.anthropic.com');
+    expect(file).toContain('https://openrouter.ai');
+  });
+
+  it('emits Content-Security-Policy meta on /playground', async () => {
+    const file = await readFile(resolve(__dirname, '../../dist/playground/index.html'), 'utf8');
+    expect(file).toMatch(/http-equiv="Content-Security-Policy"/);
+  });
+});
