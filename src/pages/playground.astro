@@ -2,6 +2,7 @@
 import Base from '~/layouts/Base.astro';
 import { Chat } from '~/components/chat/Chat';
 import { JDAnalyzer } from '~/components/jd-analyzer/JDAnalyzer';
+import { TermsGate } from '~/components/byok/TermsGate';
 import { loadCV } from '~/lib/content/cv-loader';
 import { resolve } from 'node:path';
 
@@ -9,10 +10,12 @@ const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
 ---
 
 <Base title="Playground" description="Interactive AI features grounded in Cameron's CV">
+  <TermsGate client:load />
+
   <h1 class="text-3xl font-semibold tracking-tight mb-2">Playground</h1>
   <p class="text-neutral-600 dark:text-neutral-400 mb-8">
-    Three AI features grounded in this site's content. Connect with your own AI account (OpenRouter,
-    Anthropic, OpenAI) or try demo mode. See <a
+    Interactive AI features grounded in this site&rsquo;s content. Connect with your own AI account
+    (OpenRouter, Anthropic, OpenAI) or try demo mode. See <a
       href="/security"
       class="underline underline-offset-4">/security</a
     > for how keys are handled.

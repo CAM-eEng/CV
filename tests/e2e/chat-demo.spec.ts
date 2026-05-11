@@ -1,8 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function acceptTerms(page: Page) {
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /Agree to Terms and Conditions/i }).click();
+  await expect(page.getByRole('dialog', { name: /Terms/i })).not.toBeVisible();
+}
 
 test.describe('Chat in demo mode', () => {
   test('connect → ask → stream → cite', async ({ page }) => {
     await page.goto('/playground');
+    await acceptTerms(page);
 
     // The Connect to ask button is visible because no session exists yet.
     await page.getByRole('button', { name: /Connect to ask/i }).click();
@@ -28,6 +35,7 @@ test.describe('Chat in demo mode', () => {
 
   test('disconnect clears the session', async ({ page }) => {
     await page.goto('/playground');
+    await acceptTerms(page);
     await page.getByRole('button', { name: /Connect to ask/i }).click();
     await page.getByRole('button', { name: /Try demo mode/i }).click();
     await expect(page.getByText(/Connected · Demo/i)).toBeVisible();

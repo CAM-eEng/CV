@@ -1,8 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function acceptTerms(page: Page) {
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /Agree to Terms and Conditions/i }).click();
+  await expect(page.getByRole('dialog', { name: /Terms/i })).not.toBeVisible();
+}
 
 test.describe('JD analyzer in demo mode', () => {
   test('paste JD → see scorecard', async ({ page }) => {
     await page.goto('/playground#jd-analyzer');
+    await acceptTerms(page);
 
     // The textarea lives inside the JDAnalyzer island.
     const ta = page.getByPlaceholder(/Paste a job description/i);
