@@ -26,13 +26,18 @@ export function FeaturedRepoCarousel({ repos, projects }: Props) {
   const cards = filterFeaturedRepos(repos, projects);
   if (!cards.length) return null;
 
+  // When there's only one featured repo, let it span the full row instead of
+  // sitting awkwardly in the left half of a 2-column grid. With 2+ cards, the
+  // normal 2-column layout kicks in.
+  const singleCardClass = cards.length === 1 ? 'md:col-span-2' : '';
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {cards.map((r) => (
         <a
           key={r.name}
           href={r.url}
-          className="block border border-neutral-200 dark:border-neutral-800 rounded p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+          className={`block border border-neutral-200 dark:border-neutral-800 rounded p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 ${singleCardClass}`}
         >
           <div className="flex items-baseline justify-between mb-1">
             <h5 className="font-mono font-medium">{r.name}</h5>
