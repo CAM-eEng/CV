@@ -35,7 +35,7 @@ const ld = [personJsonLd(cv), ...workExperienceJsonLd(cv)];
     <section>
       <h2>Work</h2>
       {
-        cv.work.map((w) => (
+        cv.work.map((w, wi) => (
           <article class="mb-6">
             <header class="flex flex-wrap items-baseline justify-between gap-2">
               <div>
@@ -51,8 +51,10 @@ const ld = [personJsonLd(cv), ...workExperienceJsonLd(cv)];
             {w.summary && <p class="mt-2">{w.summary}</p>}
             {w.highlights.length > 0 && (
               <ul class="mt-2">
-                {w.highlights.map((h) => (
-                  <li>{h}</li>
+                {w.highlights.map((h, hi) => (
+                  <li id={`work-${wi}-highlights-${hi}`} class="scroll-mt-20">
+                    {h}
+                  </li>
                 ))}
               </ul>
             )}

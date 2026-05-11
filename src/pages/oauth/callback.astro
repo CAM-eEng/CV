@@ -1,0 +1,59 @@
+---
+import Base from '~/layouts/Base.astro';
+---
+
+<Base title="Signing in…" description="OpenRouter authentication callback">
+  <div class="min-h-[40vh] flex items-center justify-center">
+    <div class="text-center">
+      <p id="status" class="text-neutral-600 dark:text-neutral-400">
+        Finishing OpenRouter sign-in…
+      </p>
+      <noscript>
+        <p class="mt-2 text-sm text-red-600">
+          JavaScript is required to complete sign-in. <a href="/">Return home</a>.
+        </p>
+      </noscript>
+    </div>
+  </div>
+
+  <script>
+    import { exchangeCode, readAndClearPendingPkce } from '~/lib/ai/openrouter-pkce';
+    import { writeSession } from '~/lib/ai/session';
+
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const stateParam = params.get('state');
+    const errParam = params.get('error');
+
+    // Scrub the URL FIRST so the code never appears in browser history beyond this point.
+    history.replaceState({}, '', window.location.pathname);
+
+    const status = document.getElementById('status')!;
+
+    if (errParam) {
+      status.textContent = `Sign-in failed: ${errParam}. You can close this tab.`;
+    } else if (!code || !stateParam) {
+      status.textContent = 'Missing authorization code. You can close this tab.';
+    } else {
+      const pending = readAndClearPendingPkce();
+      if (!pending || pending.state !== stateParam) {
+        status.textContent = 'Sign-in state mismatch — possible tampering. Aborted.';
+      } else {
+        try {
+          const token = await exchangeCode({ code, codeVerifier: pending.verifier });
+          writeSession({
+            providerId: 'openrouter',
+            token,
+            model: 'google/gemini-2.5-flash-lite:free',
+          });
+          status.textContent = 'Connected. Redirecting…';
+          setTimeout(() => {
+            window.location.href = '/playground';
+          }, 600);
+        } catch (e) {
+          status.textContent = `Sign-in failed: ${e instanceof Error ? e.message : String(e)}`;
+        }
+      }
+    }
+  </script>
+</Base>

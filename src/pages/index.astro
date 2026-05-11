@@ -1,5 +1,6 @@
 ---
 import Base from '~/layouts/Base.astro';
+import { Chat } from '~/components/chat/Chat';
 import { loadCV } from '~/lib/content/cv-loader';
 import { resolve } from 'node:path';
 
@@ -47,8 +48,7 @@ const featuredWork = cv.work.slice(0, 3);
     </a>
   </section>
 
-  <!-- Chat island placeholder; lands in Plan 2 -->
-  <section class="py-8" data-island="chat-stub">
-    <p class="text-sm text-neutral-500 italic">Chat-with-CV launches in Plan 2.</p>
+  <section class="py-8">
+    <Chat cv={cv} client:idle />
   </section>
 </Base>
