@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T19:30:03.198Z",
+  "generatedAt": "2026-05-11T21:44:23.937Z",
   "contributions": {
     "days": [
       {
@@ -1464,15 +1464,15 @@
       },
       {
         "date": "2026-05-11",
-        "count": 2
+        "count": 20
       }
     ],
-    "totalLastYear": 48
+    "totalLastYear": 66
   },
   "languages": [
     {
       "name": "TypeScript",
-      "bytes": 133890
+      "bytes": 138518
     },
     {
       "name": "Astro",
@@ -1498,11 +1498,33 @@
       "url": "https://github.com/CAM-eEng/CV",
       "stars": 0,
       "forks": 0,
-      "lastPushedAt": "2026-05-11T19:28:56Z",
+      "lastPushedAt": "2026-05-11T21:44:02Z",
       "primaryLanguage": "TypeScript"
     }
   ],
-  "htb": null,
+  "htb": {
+    "rank": "Noob",
+    "points": 0,
+    "ownedMachines": 1,
+    "categories": {
+      "reversing": 0,
+      "crypto": 0,
+      "pwn": 0,
+      "web": 0,
+      "misc": 0,
+      "forensics": 0,
+      "mobile": 0,
+      "osint": 0,
+      "hardware": 0,
+      "gamepwn": 0,
+      "blockchain": 0,
+      "ai/ml": 0,
+      "coding": 0,
+      "secure coding": 0,
+      "ics": 0,
+      "quantum": 0
+    }
+  },
   "freshness": [
     {
       "name": "CircuitPython",
