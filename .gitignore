@@ -1,4 +1,7 @@
 .superpowers/
+.claude/
+.tmp/
+help/
 node_modules/
 dist/
 .env
