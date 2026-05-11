@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # so the workflow can commit data/activity.json
+  contents: write # branch creation for the PR
+  pull-requests: write # open + (auto-)merge the PR
 
 concurrency:
   group: refresh-activity
@@ -35,14 +36,25 @@ jobs:
           HTB_USER_ID: ${{ secrets.HTB_USER_ID }}
         run: bun run refresh-activity
 
-      - name: Commit & push if changed
-        run: |
-          if git diff --quiet data/activity.json; then
-            echo "No changes."
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/activity.json
-          git commit -m "chore(activity): nightly refresh ($(date -u +%Y-%m-%dT%H:%MZ))"
-          git push
+      - name: Open / update PR if changed
+        id: open-pr
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(activity): nightly refresh'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          branch: chore/refresh-activity
+          delete-branch: true
+          title: 'chore(activity): nightly refresh'
+          body: |
+            Automated activity refresh from the nightly workflow.
+
+            - Bumps `data/activity.json` with current GitHub contributions, repos, languages, and (optionally) HackTheBox stats from `data/htb-manual.json` or the HTB API.
+            - Re-opens / updates if a previous refresh PR is still open.
+
+      - name: Enable auto-merge on the PR
+        if: steps.open-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge ${{ steps.open-pr.outputs.pull-request-number }} --squash --auto --delete-branch
