@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { AnthropicProvider } from '~/lib/ai/anthropic';
 
 const ssEvent = (event: string, data: object) =>
@@ -18,7 +18,7 @@ function makeStreamResponse(events: string[]): Response {
   });
 }
 
-let fetchSpy: ReturnType<typeof vi.spyOn>;
+let fetchSpy: MockInstance<typeof fetch>;
 
 beforeEach(() => {
   fetchSpy = vi.spyOn(globalThis, 'fetch');

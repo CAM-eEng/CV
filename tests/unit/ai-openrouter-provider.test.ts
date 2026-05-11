@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { OpenRouterProvider } from '~/lib/ai/openrouter';
 
 function streamRes(chunks: string[]): Response {
@@ -13,7 +13,7 @@ function streamRes(chunks: string[]): Response {
   return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } });
 }
 
-let fetchSpy: ReturnType<typeof vi.spyOn>;
+let fetchSpy: MockInstance<typeof fetch>;
 beforeEach(() => {
   fetchSpy = vi.spyOn(globalThis, 'fetch');
 });
