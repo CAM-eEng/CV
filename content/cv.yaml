@@ -5,13 +5,13 @@ basics:
   url: https://cameronhartman.dev
   summary: |
     Software engineer with 6+ years across firmware, RF test instrumentation,
-    hardware design, and applied AI. Currently at LitePoint leading the
-    engineering team's first AI project (Regression AI Agent on Snowflake +
-    Azure Blob Storage + Python), driving Docker and Jenkins adoption, and
-    shepherding native Linux support in the Visual Studio toolchain.
-    Background in EagleCAD PCB design, embedded C++, Python test automation,
-    and RF measurement up to 60 GHz with Spectrum Analyzers, VNAs, and
-    oscilloscopes.
+    hardware design, and hardware+software debugging. Currently at LitePoint
+    leading the engineering team's first AI project (Regression AI Agent
+    using Snowflake + Azure Blob Storage + Python + Copilot Studio), driving
+    Docker adoption, and shepherding native Linux support in the Visual
+    Studio toolchain. Background in Electrical Engineering, with experience
+    in PCB design, embedded C++, Python test automation, and with Spectrum
+    Analyzers, VNAs, and Oscilloscopes.
   location:
     city: San Jose
     region: CA
@@ -38,7 +38,7 @@ work:
       - Design of Python test scripts for use in debugging and testing products.
       - Hardware test and debugging of circuit boards and RF devices (0–60 GHz) using Spectrum Analyzer and VNA.
       - Use of SPI protocol to communicate with product devices including EEPROM, digital attenuators, and sensors.
-      - "AI: Leading the LitePoint engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, and Python."
+      - "AI: Leading the LitePoint engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, Python, and Copilot Studio."
       - 'DevOps: Drove team adoption of Docker and integrated Jenkins to automate testing frameworks.'
       - "Linux: Led the LitePoint engineering team's effort to support Linux natively in the Visual Studio editor."
 
