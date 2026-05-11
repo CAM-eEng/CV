@@ -3,9 +3,10 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   test: {
-    include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
-    environment: 'node',
+    include: ['tests/unit/**/*.test.{ts,tsx}', 'tests/integration/**/*.test.{ts,tsx}'],
+    environment: 'jsdom',
     globals: false,
+    setupFiles: ['./tests/setup.ts'],
   },
   resolve: {
     alias: {
