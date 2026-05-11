@@ -1,11 +1,17 @@
 basics:
   name: Cameron Hartman
-  label: Firmware / Embedded Engineer
+  label: Software Engineer — Firmware · AI · DevOps
   email: cameron.hartman081@gmail.com
   url: https://cameronhartman.dev
   summary: |
-    Firmware and embedded systems engineer with experience across CircuitPython,
-    STM32, and full-stack web. (Replace this placeholder summary with current bio.)
+    Software engineer with 6+ years across firmware, RF test instrumentation,
+    hardware design, and applied AI. Currently at LitePoint leading the
+    engineering team's first AI project (Regression AI Agent on Snowflake +
+    Azure Blob Storage + Python), driving Docker and Jenkins adoption, and
+    shepherding native Linux support in the Visual Studio toolchain.
+    Background in EagleCAD PCB design, embedded C++, Python test automation,
+    and RF measurement up to 60 GHz with Spectrum Analyzers, VNAs, and
+    oscilloscopes.
   location:
     city: San Jose
     region: CA
@@ -19,39 +25,172 @@ basics:
       url: https://www.linkedin.com/in/cameronhartman/
 
 work:
-  - name: Litepoint
-    position: Firmware Engineer
+  - name: LitePoint
+    position: Software (Firmware) Engineer
     url: https://www.litepoint.com
-    startDate: '2020-06'
+    startDate: '2020-07'
     summary: |
-      (Placeholder — replace with current work summary.)
+      Firmware and software engineering for next-generation wireless test
+      equipment, with engineering-team leadership on AI, DevOps, and tooling
+      initiatives.
     highlights:
-      - Placeholder highlight; replace with real impact statement.
+      - Design and development of firmware in C++ for nextgen telecommunications test equipment.
+      - Design of Python test scripts for use in debugging and testing products.
+      - Hardware test and debugging of circuit boards and RF devices (0–60 GHz) using Spectrum Analyzer and VNA.
+      - Use of SPI protocol to communicate with product devices including EEPROM, digital attenuators, and sensors.
+      - "AI: Leading the LitePoint engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, and Python."
+      - 'DevOps: Drove team adoption of Docker and integrated Jenkins to automate testing frameworks.'
+      - "Linux: Led the LitePoint engineering team's effort to support Linux natively in the Visual Studio editor."
+
+  - name: MyPitboard Inc.
+    position: Hardware Software Design Engineer
+    url: https://mypitboard.com
+    startDate: '2020-02'
+    endDate: '2020-07'
+    summary: |
+      Rapid PCB design and full-stack web app development for a battery-operated
+      GPS-tracking product targeted at harsh environments.
+    highlights:
+      - Rapid design and development (schematic, layout, physical assembly) of PCBs using EagleCAD.
+      - Design focus on stability and power efficiency for battery-operated platform in harsh environments.
+      - Design and development of a web app using Python, Django, React, PostgreSQL, Heroku, and Firebase.
+      - Interfaced with embedded C code over UART and SPI to retrieve GNSS-GPS data for analysis.
+
+  - name: Tetra Tech Inc.
+    position: Project Engineer, Team Lead — Electrical
+    startDate: '2019-07'
+    endDate: '2019-11'
+    summary: |
+      Managed project phases and personnel as electrical team lead on
+      infrastructure projects in Tiverton, Ontario.
+    highlights:
+      - Managed project responsibilities by identifying project phases and elements, assigning personnel and resources, leading to increased productivity and timeline adherence.
+      - Prepared project status reports by collecting, analyzing, and summarizing information and trends; recommended actions to improve communication and timeline adherence.
+
+  - name: MC Countermeasures Inc.
+    position: Hardware Design Engineer
+    startDate: '2018-05'
+    endDate: '2019-05'
+    summary: |
+      Design and test of military-grade EW/ECM systems in Kanata, Ontario.
+    highlights:
+      - Used RS232, USB, Ethernet, I2C, SPI, Wi-Fi, and CAN protocols in design of military-grade EW/ECM systems.
+      - Tested RF components, PCBs, and other RF systems with Python, C++, C#, Vector Network Analyzer, Spectrum Analyzer, Oscilloscope, and Signal Generator to ensure operational status.
+      - Automated testing of RF devices and systems by developing test scripts in VS Code using C++, Python, Qt, and microcontrollers — improving testing speed by more than 75%.
 
 education:
   - institution: University of Ottawa
     area: Electrical Engineering
     studyType: BASc
     startDate: '2014-09'
-    endDate: '2019-04'
+    endDate: '2018-12'
 
 skills:
-  - name: Embedded
-    keywords: [CircuitPython, STM32, HAL, FreeRTOS]
-  - name: Frontend
-    keywords: [TypeScript, React, Astro, Tailwind]
-  - name: Languages
-    keywords: [Python, Rust, Java, Dart]
+  - name: Proficient
+    keywords:
+      - C/C++
+      - Python
+      - SVN
+      - Git
+      - HTML
+      - CSS
+      - VBA
+      - VBScript
+      - EagleCAD
+      - Assembly
+      - Matlab
+      - Spectrum Analyzer
+      - Vector Network Analyzer
+      - Digital Logic Analyzer
+      - Oscilloscope
+      - SPI
+      - I2C
+      - UART
+      - Wi-Fi
+  - name: Exposure
+    keywords:
+      - Django
+      - Java
+      - JavaScript
+      - TypeScript
+      - C#
+      - Markdown
+      - jQuery
+      - Lisp
+      - Bash
+      - SQL
+      - Qt
+      - Apache Commons
+      - XML
+      - MariaDB
+      - MySQL
+      - Docker
+      - Linux
+      - OpenCV
+      - Pillow
+      - REST
+      - CAN
+      - RS232
+      - USB
+      - Ethernet
+      - Snowflake
+      - Azure Blob Storage
+      - Jenkins
+  - name: Tools
+    keywords:
+      - Trello
+      - Excel
+      - Q-dir
+      - Jira
+      - Confluence
+      - Beyond Compare
+      - Typora
+  - name: Environments
+    keywords:
+      - Visual Studio
+      - VS Code
+      - PyCharm
+      - Sublime Text
+      - Terminal
 
 projects:
   - name: LedDisplay
-    description: CircuitPython matrix clock on Adafruit Matrix Portal S3.
-    keywords: [CircuitPython, RGB matrix, embedded]
+    description: CircuitPython matrix clock on Adafruit Matrix Portal S3 driving a 128×64 RGB LED matrix; full investigation of an undocumented HUB75 panel scan mode.
+    keywords:
+      - CircuitPython
+      - Adafruit Matrix Portal S3
+      - HUB75
+      - RGB matrix
+      - embedded
     startDate: '2026-04'
     url: https://github.com/CAM-eEng/LedDisplay
     featured: true
+
   - name: 5easy
-    description: D&D 5e character manager web app.
-    keywords: [TypeScript, React, Supabase]
+    description: D&D 5e character manager web app — full-stack TypeScript with Supabase.
+    keywords:
+      - TypeScript
+      - React
+      - Supabase
     startDate: '2026-04'
     featured: true
+
+  - name: Testing Interface for RF Amplifier
+    description: Qt user interface and Python scripts in VS Code for testing and validation of high-power amplifiers; firmware in C++ on Arduino Mega.
+    keywords:
+      - Qt
+      - Python
+      - C++
+      - Arduino
+      - RF
+    startDate: '2019'
+
+  - name: Solar Microinverter with Software Phase Lock Loop
+    description: Electrical inverter design with embedded software PLL on Arduino Uno; led scrum/agile workflow across hardware and software teams.
+    keywords:
+      - Arduino
+      - C++
+      - Matlab
+      - embedded
+      - PLL
+    startDate: '2018'
