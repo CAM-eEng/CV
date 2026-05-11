@@ -2,37 +2,22 @@
 
 Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. Items are grouped by urgency. Read `READ-BEFORE-BURNING.md` before any operational change (DNS, secrets, Pages migration).
 
-**Last updated:** 2026-05-11
+**Last updated:** 2026-05-12
 
 ---
 
-## 🟢 Plan 3 status — running
+## 🟢 Plan 3 status — live with real data
 
-- [x] **GH_API_TOKEN set** (2026-05-11). The fine-grained PAT used to seed this should be **rotated** because it was briefly exposed in chat — see "Rotate the leaked PAT" below.
+- [x] **GH_API_TOKEN set + rotated** after the original was exposed in chat.
 - [x] **HTB switched from API → manual JSON.** HackTheBox no longer exposes self-service app tokens for many account tiers; replaced with `data/htb-manual.json` (gitignore-safe, hand-edited).
-- [x] **Refresh workflow** updated to open a PR (auto-merge on CI pass) instead of pushing direct to main, since branch protection blocks bot direct-pushes.
+- [x] **Refresh workflow** opens a PR (auto-merge on CI pass) instead of pushing direct to main; bypasses branch-protection bot-rejection.
+- [x] **First refresh ran successfully.** `data/activity.json` now reflects real GitHub data (48 contributions over the year, real repo set, real language donut, real freshness timeline). Dashboard at `cameronhartman.dev/` shows the live data.
 
-### Still to do
+### Still to do (optional / async)
 
-- [ ] **Rotate the leaked GH PAT.**
-  1. Visit `https://github.com/settings/personal-access-tokens`
-  2. Revoke the current `cv-refresh-activity-2026Q2` token.
-  3. Create a new fine-grained PAT with the same scopes (Public repos read-only, Contents read-only, Metadata read-only, 90-day expiry).
-  4. In your terminal: `gh secret set GH_API_TOKEN --repo CAM-eEng/CV` — `gh` will prompt you for the value silently (no `--body` flag, no shell history, no chat).
-  5. Verify: `gh secret list --repo CAM-eEng/CV` — `GH_API_TOKEN` should show a new "updated" timestamp.
+- [ ] **Fill in `data/htb-manual.json`** (work in progress — file created from template). Edit `rank`, `points`, `ownedMachines`, and `categories` with real values; remove the `_doc` field; commit + PR. The next refresh will publish the HTB card.
 
-- [ ] **(Optional) Add HTB stats via hand-maintained JSON.**
-  - Copy the template: `cp data/htb-manual.json.example data/htb-manual.json`
-  - Edit: fill in your real `rank`, `points`, `ownedMachines`, and `categories`. Remove the `_doc` field.
-  - Commit + PR: the file is read by the refresh workflow on every run. After merge, the next nightly refresh (or manual `gh workflow run refresh-activity.yml`) will publish the HTB card.
-  - Skip entirely if you don't want an HTB section.
-
-- [ ] **Trigger the first real refresh after the PAT rotation.**
-  ```bash
-  gh workflow run refresh-activity.yml
-  gh run watch
-  ```
-  Expected: workflow runs, opens a PR titled `chore(activity): nightly refresh`, CI runs on the PR, auto-merge fires once CI is green, deploy workflow then runs, dashboard goes live within ~5 minutes.
+- [ ] **Make LedDisplay public** so the Featured Repos section appears. Currently `cv.yaml` flags LedDisplay + 5easy as `featured: true` but both are private, so the carousel filter returns nothing and the section is hidden. Flipping LedDisplay public surfaces it automatically on the next refresh.
 
 ---
 
@@ -52,29 +37,16 @@ Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. 
 
 ---
 
-## 🟠 Open Dependabot PRs (review and merge or close)
+## 🟢 Dependency status — Dependabot caught up
 
-As of 2026-05-11 there are **9 open Dependabot PRs**. Walk through them in this order:
+8 of 9 open Dependabot PRs landed on 2026-05-11 (six were bundled into PR #23 after the per-PR rebase cycles got slow). Current pins:
 
-### Safe to merge after CI green (low blast radius)
+- `actions/checkout` v6.0.2 · `oven-sh/setup-bun` v2.2.0 · `actions/upload-pages-artifact` v5.0.0 · `actions/deploy-pages` v5.0.0
+- `typescript` 6.0.3 · `vitest` 4.1.5 · `@eslint/js` 10.0.1 · `@astrojs/mdx` 5.0.4
 
-- [ ] **PR #2** — `oven-sh/setup-bun` 2.0.1 → 2.2.0 (GitHub Action minor bump)
-- [ ] **PR #1** — `actions/checkout` v4.1.7 → v6.0.2 *(major; review changelog — usually backward-compatible for our usage)*
+### Still pending
 
-### Major framework bumps — review before merging
-
-- [ ] **PR #5** — `@astrojs/mdx` 4.3.14 → 5.0.4. Major. Read MDX 5 migration notes; likely fine since we use plain MDX with frontmatter.
-- [ ] **PR #6** — `typescript` 5.9.3 → 6.0.3. Major. Run `bun run build` against the PR branch locally; flag any new errors.
-- [ ] **PR #7** — `vitest` 3.2.4 → 4.1.5. Major. Read Vitest 4 migration notes (especially `vi.spyOn` and `MockInstance` typing — already had a brush with these in Plan 2).
-- [ ] **PR #8** — `astro` 5.18.1 → 6.3.1. Major. **Highest blast radius.** Astro 6 likely changes CSP hash values (different inline bootstrap script). Read changelog, test locally, regenerate hashes in `src/layouts/Base.astro` if needed.
-- [ ] **PR #9** — `@eslint/js` 9.39.4 → 10.0.1. Major. Watch for new rules that trigger our existing source.
-
-### Pages-deploy actions — extra care
-
-- [ ] **PR #3** — `actions/upload-pages-artifact` 3.0.1 → 5.0.0. Touches deployment. Test in a workflow dispatch on a feature branch before merging.
-- [ ] **PR #4** — `actions/deploy-pages` 4.0.5 → 5.0.0. Same — touches deployment.
-
-**Order recommendation:** start with #2 (lowest risk) → #1 → #5 → #9 → #7 → #6 → #3 → #4 → #8 (Astro 6 last, biggest unknown).
+- [ ] **Astro 5 → 6 (PR #8 was closed).** Blocked by a Vite-version type incompatibility between Astro 6's bundled Vite and `@tailwindcss/vite`'s current build (a `Plugin<any>` ↔ `PluginOption` mismatch). Re-evaluate when `@tailwindcss/vite` ships a release built against Vite 7+. Will likely also require regenerating the four SHA-256 hashes in `src/layouts/Base.astro`'s CSP since Astro 6 changes its inline hydration bootstrap. Dependabot will re-create the PR when a newer Astro lands.
 
 ---
 
