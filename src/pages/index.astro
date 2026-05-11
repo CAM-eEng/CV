@@ -1,11 +1,13 @@
 ---
 import Base from '~/layouts/Base.astro';
-import { Chat } from '~/components/chat/Chat';
 import { loadCV } from '~/lib/content/cv-loader';
+import { ActivityDashboard } from '~/components/activity/ActivityDashboard';
+import { loadActivity } from '~/lib/activity/loader';
 import { resolve } from 'node:path';
 
 const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
 const featuredWork = cv.work.slice(0, 3);
+const activity = await loadActivity(resolve(process.cwd(), 'data/activity.json'));
 ---
 
 <Base
@@ -39,16 +41,22 @@ const featuredWork = cv.work.slice(0, 3);
     </ul>
   </section>
 
-  <section class="py-8">
+  <section class="py-8 border-t border-neutral-200 dark:border-neutral-800">
+    <ActivityDashboard activity={activity} cv={cv} client:visible />
+  </section>
+
+  <section class="py-8 flex flex-wrap gap-3">
     <a
       href="/cv"
       class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
     >
       View full CV →
     </a>
-  </section>
-
-  <section class="py-8">
-    <Chat cv={cv} client:idle />
+    <a
+      href="/playground"
+      class="inline-block border border-neutral-300 dark:border-neutral-700 rounded px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+    >
+      Try the AI playground →
+    </a>
   </section>
 </Base>

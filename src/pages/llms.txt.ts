@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { loadCV } from '~/lib/content/cv-loader';
 import { resolve } from 'node:path';
 import { getCollection } from 'astro:content';
+import { SITE_URL } from '~/lib/site';
 
 export const GET: APIRoute = async () => {
   const cv = await loadCV(resolve(process.cwd(), 'content/cv.yaml'));
@@ -13,8 +14,8 @@ export const GET: APIRoute = async () => {
     `> ${cv.basics.label}. ${cv.basics.summary.split('\n')[0]}`,
     '',
     '## Canonical machine-readable CV',
-    '- [/cv.json](https://cameronhartman.dev/cv.json) — JSON Resume schema',
-    '- [/cv](https://cameronhartman.dev/cv) — human-readable HTML CV with JSON-LD',
+    `- [/cv.json](${SITE_URL}/cv.json) — JSON Resume schema`,
+    `- [/cv](${SITE_URL}/cv) — human-readable HTML CV with JSON-LD`,
     '',
     '## Work',
     ...cv.work.map(
@@ -27,8 +28,7 @@ export const GET: APIRoute = async () => {
     '',
     '## Projects',
     ...projects.map(
-      (p) =>
-        `- [${p.data.title}](https://cameronhartman.dev/projects/${p.data.slug}) — ${p.data.summary}`,
+      (p) => `- [${p.data.title}](${SITE_URL}/projects/${p.data.slug}) — ${p.data.summary}`,
     ),
     '',
     '## Contact',

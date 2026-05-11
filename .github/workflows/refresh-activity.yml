@@ -1,0 +1,60 @@
+name: refresh-activity
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC nightly
+  workflow_dispatch:
+
+permissions:
+  contents: write # branch creation for the PR
+  pull-requests: write # open + (auto-)merge the PR
+
+concurrency:
+  group: refresh-activity
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Refresh activity
+        env:
+          GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
+          GH_LOGIN: CAM-eEng
+          HTB_API_TOKEN: ${{ secrets.HTB_API_TOKEN }}
+          HTB_USER_ID: ${{ secrets.HTB_USER_ID }}
+        run: bun run refresh-activity
+
+      - name: Open / update PR if changed
+        id: open-pr
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(activity): nightly refresh'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          branch: chore/refresh-activity
+          delete-branch: true
+          title: 'chore(activity): nightly refresh'
+          body: |
+            Automated activity refresh from the nightly workflow.
+
+            - Bumps `data/activity.json` with current GitHub contributions, repos, languages, and (optionally) HackTheBox stats from `data/htb-manual.json` or the HTB API.
+            - Re-opens / updates if a previous refresh PR is still open.
+
+      - name: Enable auto-merge on the PR
+        if: steps.open-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge ${{ steps.open-pr.outputs.pull-request-number }} --squash --auto --delete-branch
