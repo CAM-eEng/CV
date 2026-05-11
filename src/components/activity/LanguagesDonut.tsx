@@ -26,9 +26,13 @@ export function LanguagesDonut({ languages }: Props) {
     return arc;
   });
 
+  // viewBox is intentionally larger than 80x80: the stroke of width 12 extends
+  // ±6 outside r=36, so without padding the cardinal-direction arcs get
+  // clipped at the viewBox edges. -4 -4 88 88 gives 4 units of breathing room
+  // on every side while keeping the geometric center at (40, 40).
   return (
     <div className="flex items-center gap-6">
-      <svg viewBox="0 0 80 80" className="w-24 h-24 -rotate-90">
+      <svg viewBox="-4 -4 88 88" className="w-28 h-28 -rotate-90 shrink-0">
         <circle
           cx={40}
           cy={40}
