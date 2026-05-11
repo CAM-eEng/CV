@@ -32,9 +32,42 @@ Same applies to subdomains: never create `blog.cameronhartman.dev` or similar po
 - Workflow with secrets ⇒ trigger is `push: [main]`, `schedule:`, or `workflow_dispatch`. Period.
 - Workflow on `pull_request` ⇒ no secrets. Forks can run it; assume the fork is hostile.
 - **Never** use `pull_request_target`. It's the trigger that runs in the PR's context with secrets available, and it's been the cause of many real-world supply-chain breaches.
-- Pin third-party Actions to a 40-char commit SHA, not `@v4`. Dependabot updates the SHA when the upstream releases.
 
 The split is enforced in this repo by having `ci.yml` (PR, no secrets) separate from `deploy.yml` and `refresh-activity.yml` (main + cron, with secrets). Don't merge them.
+
+**Pin third-party Actions to a 40-char commit SHA — and resolve the SHA from GitHub, not from memory.**
+
+Pinning the SHA is what protects you from a compromised maintainer. But the rule only protects you if the SHA actually corresponds to the version comment next to it; a hand-written or hallucinated SHA either points at the wrong tree (silent supply-chain hole) or doesn't resolve at all (every deploy fails with `Unable to resolve action`).
+
+Resolve every SHA at the moment you pin it:
+
+```bash
+gh api repos/<owner>/<action>/git/refs/tags/<version> --jq '.object.sha'
+
+# example:
+gh api repos/actions/deploy-pages/git/refs/tags/v5.0.0 --jq '.object.sha'
+# → cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
+```
+
+Paste the *resolved* SHA into the workflow with the version as an inline comment so future readers (and Dependabot) can cross-check:
+
+```yaml
+- uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+```
+
+When Dependabot bumps an Action, it does this lookup correctly — accept its diff verbatim. The risk is hand-edits and batch PRs where SHAs get typed in by a human (or an AI). If you (or I) ever combine multiple bumps into one PR, re-resolve every SHA with the command above before pushing. The first deploy after a wrong SHA is how you find out, and it can interrupt the site's auto-deploy chain.
+
+Quick sanity-check after editing any `.github/workflows/*.yml`:
+
+```bash
+git diff --staged .github/workflows | grep -oE '@[a-f0-9]{40}' | sort -u | \
+  while read sha; do
+    sha="${sha#@}"
+    gh api "repos/.../commits/$sha" >/dev/null 2>&1 && echo "$sha OK" || echo "$sha MISSING"
+  done
+```
+
+(Replace `repos/.../commits/$sha` with the right `repos/<owner>/<action>/commits/$sha` per line if you want to be precise; the principle is "verify every pinned SHA resolves before merging.")
 
 ## Before you add a dependency
 
