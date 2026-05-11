@@ -27,8 +27,10 @@ async function main() {
 
   // HTB stats: prefer live API if token configured, fall back to a
   // hand-maintained data/htb-manual.json, finally fall back to null.
+  // HTB_USER_ID is optional — fetchHtbStats derives it from the JWT's
+  // `sub` claim when not provided.
   let htb = null;
-  if (process.env.HTB_API_TOKEN && process.env.HTB_USER_ID) {
+  if (process.env.HTB_API_TOKEN) {
     try {
       console.log('Fetching HackTheBox stats from API…');
       htb = await fetchHtbStats({

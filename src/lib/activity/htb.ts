@@ -46,13 +46,46 @@ async function htbFetch(path: string, token: string): Promise<Response> {
   });
 }
 
-export async function fetchHtbStats(opts: { token: string; userId: string }): Promise<HtbStats> {
-  const profileRes = await htbFetch(`/profile/${opts.userId}`, opts.token);
+/**
+ * Decode the `sub` (subject) claim from a JWT without verifying the signature.
+ * HackTheBox app tokens are JWTs whose `sub` is the user's numeric ID, so we
+ * can derive the user ID from the token alone — no need for a separate
+ * HTB_USER_ID secret.
+ *
+ * Returns null for malformed tokens, missing payloads, or non-JWT strings.
+ * Caller is expected to fall back gracefully (or accept an explicit userId).
+ */
+export function decodeJwtSub(token: string): string | null {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    const candidate =
+      (typeof payload.sub === 'string' || typeof payload.sub === 'number') && payload.sub
+        ? String(payload.sub)
+        : (typeof payload.id === 'string' || typeof payload.id === 'number') && payload.id
+          ? String(payload.id)
+          : null;
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchHtbStats(opts: { token: string; userId?: string }): Promise<HtbStats> {
+  const userId = opts.userId ?? decodeJwtSub(opts.token);
+  if (!userId) {
+    throw new Error(
+      'Could not determine HTB user ID: pass userId explicitly or use a JWT app token with a sub/id claim.',
+    );
+  }
+
+  const profileRes = await htbFetch(`/profile/${userId}`, opts.token);
   if (!profileRes.ok)
     throw new Error(`HTB profile error (${profileRes.status}): ${await profileRes.text()}`);
   const profile = ProfileSchema.parse(await profileRes.json());
 
-  const catsRes = await htbFetch(`/profile/progress/categories/${opts.userId}`, opts.token);
+  const catsRes = await htbFetch(`/profile/progress/categories/${userId}`, opts.token);
   let categories: Record<string, number> = {};
   if (catsRes.ok) {
     try {
