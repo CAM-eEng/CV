@@ -6,57 +6,33 @@ Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. 
 
 ---
 
-## 🔴 Now — unblocks Plan 3 from showing real data
+## 🟢 Plan 3 status — running
 
-The activity dashboard at the top of `cameronhartman.dev/` currently shows "Activity dashboard pending first nightly refresh" because the nightly workflow has no credentials yet. Set these up:
+- [x] **GH_API_TOKEN set** (2026-05-11). The fine-grained PAT used to seed this should be **rotated** because it was briefly exposed in chat — see "Rotate the leaked PAT" below.
+- [x] **HTB switched from API → manual JSON.** HackTheBox no longer exposes self-service app tokens for many account tiers; replaced with `data/htb-manual.json` (gitignore-safe, hand-edited).
+- [x] **Refresh workflow** updated to open a PR (auto-merge on CI pass) instead of pushing direct to main, since branch protection blocks bot direct-pushes.
 
-### 1. Create a fine-grained GitHub PAT
+### Still to do
 
-- [ ] Visit `https://github.com/settings/personal-access-tokens/new`
-- [ ] **Resource owner:** `CAM-eEng`
-- [ ] **Repository access:** "Public repositories (read-only)" — or restrict to just `CAM-eEng/CV`
-- [ ] **Repository permissions:** Contents = **Read-only**, Metadata = Read-only (auto-selected)
-- [ ] **Account permissions:** none
-- [ ] **Expiration:** 90 days
-- [ ] **Token name:** `cv-refresh-activity-2026Q2`
-- [ ] Generate → copy the token (starts with `github_pat_…`)
+- [ ] **Rotate the leaked GH PAT.**
+  1. Visit `https://github.com/settings/personal-access-tokens`
+  2. Revoke the current `cv-refresh-activity-2026Q2` token.
+  3. Create a new fine-grained PAT with the same scopes (Public repos read-only, Contents read-only, Metadata read-only, 90-day expiry).
+  4. In your terminal: `gh secret set GH_API_TOKEN --repo CAM-eEng/CV` — `gh` will prompt you for the value silently (no `--body` flag, no shell history, no chat).
+  5. Verify: `gh secret list --repo CAM-eEng/CV` — `GH_API_TOKEN` should show a new "updated" timestamp.
 
-### 2. (Optional) HackTheBox token + user ID
+- [ ] **(Optional) Add HTB stats via hand-maintained JSON.**
+  - Copy the template: `cp data/htb-manual.json.example data/htb-manual.json`
+  - Edit: fill in your real `rank`, `points`, `ownedMachines`, and `categories`. Remove the `_doc` field.
+  - Commit + PR: the file is read by the refresh workflow on every run. After merge, the next nightly refresh (or manual `gh workflow run refresh-activity.yml`) will publish the HTB card.
+  - Skip entirely if you don't want an HTB section.
 
-Skip this section if you don't use HackTheBox — the workflow will set `htb: null` and the HTB card won't render.
-
-- [ ] Sign in to `https://www.hackthebox.com`
-- [ ] Profile → Settings → API → "Create App Token"
-- [ ] Copy the JWT (starts with `eyJ…`)
-- [ ] Note your numeric user ID (visible in the URL of your profile page)
-
-### 3. Set the repo secrets
-
-```bash
-gh secret set GH_API_TOKEN --body 'github_pat_…'       # required
-gh secret set HTB_API_TOKEN --body 'eyJ…'              # optional
-gh secret set HTB_USER_ID --body 'NNNNN'               # optional
-gh secret list                                          # verify
-```
-
-### 4. Trigger the first refresh
-
-```bash
-gh workflow run refresh-activity.yml
-gh run watch
-```
-
-Expected: the workflow fetches GitHub + (optionally) HTB, writes `data/activity.json`, commits as `github-actions[bot]`, and the deploy workflow fires automatically. Within ~3 minutes:
-
-```bash
-curl -sf https://cameronhartman.dev/ | grep -oE "Recent activity"
-```
-
-…should return `Recent activity` (instead of the empty-stub message).
-
-### 5. Tell me when done so I can sanity-check
-
-- [ ] Ping the chat with "secrets set, refresh triggered" and I'll verify the dashboard renders correctly end-to-end.
+- [ ] **Trigger the first real refresh after the PAT rotation.**
+  ```bash
+  gh workflow run refresh-activity.yml
+  gh run watch
+  ```
+  Expected: workflow runs, opens a PR titled `chore(activity): nightly refresh`, CI runs on the PR, auto-merge fires once CI is green, deploy workflow then runs, dashboard goes live within ~5 minutes.
 
 ---
 

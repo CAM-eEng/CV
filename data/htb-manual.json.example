@@ -1,0 +1,14 @@
+{
+  "_doc": "Copy this file to data/htb-manual.json and edit the fields. Delete this _doc key. Commit your data/htb-manual.json to publish the HTB card on the homepage dashboard. The refresh workflow reads it on every run.",
+  "rank": "Pro Hacker",
+  "points": 1234,
+  "ownedMachines": 42,
+  "categories": {
+    "web": 10,
+    "pwn": 8,
+    "reversing": 6,
+    "crypto": 4,
+    "forensics": 3,
+    "misc": 2
+  }
+}
