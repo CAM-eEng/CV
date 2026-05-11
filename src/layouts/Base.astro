@@ -12,10 +12,28 @@ interface Props {
 const { title, description = 'Cameron Hartman — CV and projects', canonical } = Astro.props;
 const url = canonical ?? new URL(Astro.url.pathname, Astro.site).toString();
 
+// Astro emits a small, fixed set of inline scripts for hydration
+// bootstrapping (the astro-island custom element plus one per client
+// directive: astro:load, astro:idle, astro:visible). These scripts are not
+// user-controlled and have stable contents per Astro version. We allow them
+// by SHA-256 hash rather than enabling 'unsafe-inline'. If hydration warnings
+// appear in the console after an Astro upgrade, recompute these hashes from
+// the emitted scripts in dist/.
+const astroInlineScriptHashes = [
+  // astro-island custom element (every page with any client:* island)
+  "'sha256-U7a72oKuFFz8D7GUHLA1NZ0ciymHmDOc9T9aVDg2rWU='",
+  // client:load bootstrap
+  "'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c='",
+  // client:idle bootstrap
+  "'sha256-BF0290pkb3jxQsE7z00xR8Imp8X34FLC88L0lkMnrGw='",
+  // client:visible bootstrap
+  "'sha256-Q2BPg90ZMplYY+FSdApNErhpWafg2hcRRbndmvxuL/Q='",
+].join(' ');
+
 const csp =
   "default-src 'self'; " +
   "connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://openrouter.ai https://api.github.com; " +
-  "script-src 'self'; " +
+  `script-src 'self' ${astroInlineScriptHashes}; ` +
   "style-src 'self' 'unsafe-inline'; " +
   "img-src 'self' data: https:; " +
   "font-src 'self' data:; " +
