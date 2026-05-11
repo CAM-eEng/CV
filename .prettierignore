@@ -4,6 +4,7 @@ dist/
 node_modules/
 docs/
 READ-BEFORE-BURNING.md
+TODO.md
 public/favicon.svg
 playwright-report/
 test-results/

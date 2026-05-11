@@ -4,7 +4,7 @@ import { ContributionHeatmap } from './ContributionHeatmap';
 import { LanguagesDonut } from './LanguagesDonut';
 import { FreshnessTimeline } from './FreshnessTimeline';
 import { HtbStatsCard } from './HtbStatsCard';
-import { FeaturedRepoCarousel } from './FeaturedRepoCarousel';
+import { FeaturedRepoCarousel, filterFeaturedRepos } from './FeaturedRepoCarousel';
 
 interface Props {
   activity: Activity;
@@ -60,12 +60,14 @@ export function ActivityDashboard({ activity, cv }: Props) {
         </section>
       )}
 
-      <section>
-        <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-3">
-          Featured projects
-        </h3>
-        <FeaturedRepoCarousel repos={activity.repos} projects={cv.projects} />
-      </section>
+      {filterFeaturedRepos(activity.repos, cv.projects).length > 0 && (
+        <section>
+          <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-3">
+            Featured projects
+          </h3>
+          <FeaturedRepoCarousel repos={activity.repos} projects={cv.projects} />
+        </section>
+      )}
     </div>
   );
 }
