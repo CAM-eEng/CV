@@ -2,7 +2,33 @@
 
 Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. Items are grouped by urgency. Read `READ-BEFORE-BURNING.md` before any operational change (DNS, secrets, Pages migration).
 
-**Last updated:** 2026-05-12 (after Plan 5 themes shipped)
+**Last updated:** 2026-05-12 (after Plan 6 AI playground hardening shipped)
+
+---
+
+## 🟢 Plan 6 status — AI playground hardening shipped
+
+Shipped 2026-05-12 in PR [#48](https://github.com/CAM-eEng/CV/pull/48) (squash `5f89d72`). Closes the 11 actionable findings from the 2026-05-12 audit plus INFO #12:
+
+- [x] Anthropic `structured()` dual-message + `<job_description>` delimiter + closing-tag escape (prompt-injection resistance)
+- [x] `maxLength={8000}` + visible counter on Chat and JD textareas
+- [x] Component-mount T&C gate (Chat / JDAnalyzer render placeholder until `hasAcceptedTerms()`; reactive to in-tab `cv:terms-changed` event)
+- [x] DOMPurify: explicit `ALLOWED_URI_REGEXP` (https/http/mailto/relative only); unconditional `rel="noopener noreferrer"` on every `<a>`
+- [x] BYOK key uncontrolled (never in React state) + lock-icon domain badge showing `window.location.hostname`
+- [x] OpenRouter PKCE `assertTrustedOrigin()` gate (allowlist: cameronhartman.dev, cam-eeng.github.io, localhost, 127.0.0.1)
+- [x] All three providers route errors through `formatProviderError` (200-char truncation, whitespace collapsed)
+- [x] Per-session rate caps: 50 chat / 10 JD; history trimmed to last 20 turns before send
+- [x] Output moderation filter (narrow regex blocklist, per-streamed-chunk application)
+- [x] OpenRouter `structured()` gains `HTTP-Referer` / `X-Title` headers to match `chat()`
+
+New lib modules: `src/lib/ai/errors.ts`, `limits.ts`, `moderation.ts`. New tests: 5 unit + 1 integration + 1 E2E; 3 unit suites extended.
+
+### Open follow-ups (small, deferred from review)
+
+- [ ] **Route `exchangeCode()` errors through `formatProviderError`** in `src/lib/ai/openrouter-pkce.ts`. The three provider modules (anthropic/openai/openrouter) use it consistently for chat + structured; the OAuth token-exchange path was missed. Low risk (OpenRouter-controlled endpoint, not user-supplied), but the inconsistency is worth closing.
+- [ ] **Narrow `ProviderStatus` to not hold the BYOK token in React state.** Pre-existing — `ProviderStatus` calls `readSession()` and renders details from the full `Session` object (including `token`), making the token visible to React DevTools. The `KeyPasteForm` uncontrolled-input win is partially undercut. Render only `providerId` (and maybe `model`) instead.
+- [ ] **Spec drift fix.** `docs/superpowers/specs/2026-05-12-ai-playground-hardening.md` §6.1 E2E description says "seeds counter via localStorage to skip 49 real sends" — implementation correctly uses `sessionStorage`. Pure doc fix.
+- [ ] **Integration test for post-mount `cv:terms-changed` transition.** `tests/integration/playground-terms-gate.test.tsx` covers "no terms → placeholder" and "terms pre-set → live UI", but not "mount with no terms → dispatch event → live UI". That's the exact path the mid-stream fix (commit `677d96f`) repaired; the E2E suite caught it, but a focused integration test would be earlier-warning.
 
 ---
 
