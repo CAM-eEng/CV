@@ -57,6 +57,12 @@ export function TermsGate() {
               independent verification.
             </li>
             <li>
+              <strong>Provider responsibility.</strong> AI providers you connect with may produce
+              inaccurate, biased, or harmful content. Outputs reflect the model and provider you
+              choose, not Cameron's views. Cameron is not responsible for content generated through
+              your connected provider.
+            </li>
+            <li>
               <strong>Session-only memory.</strong> Your acceptance and any credentials live only in
               your browser&rsquo;s <code>sessionStorage</code> and disappear when you close the tab.
             </li>
