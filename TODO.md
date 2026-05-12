@@ -2,7 +2,23 @@
 
 Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. Items are grouped by urgency. Read `READ-BEFORE-BURNING.md` before any operational change (DNS, secrets, Pages migration).
 
-**Last updated:** 2026-05-12 (after themes-foundation sweep)
+**Last updated:** 2026-05-12 (after Plan 5 themes shipped)
+
+---
+
+## 🟢 Plan 5 status — themes shipped
+
+Shipped 2026-05-12 across three PRs:
+
+- [x] **#43 (`5f1cd0e`)** — 4-state theme system (Light / Dark / Matrix / System). Two-axis architecture: `<html class="dark">` drives Tailwind `dark:` variants; `<html data-theme="matrix">` swaps `--cv-*` CSS variables. Pre-paint inline bootstrap pinned in CSP via SHA-256 hash. Matrix at Cinematic flavor (#39ff14 on #050b06, JetBrains Mono, scanline at opacity 0.25, heading glow, blinking hero cursor with `prefers-reduced-motion` respected). WCAG contrast guard at `tests/unit/contrast.test.ts`.
+- [x] **#45 (`fd4d0b3`)** — converted the inline 4-segment Nav bar to a fixed top-right floating dropdown (`role="menu"` + `menuitemradio` items, click-outside + Escape close).
+- [x] **#46 (`e3144e8`)** — vertically centered the trigger to the Nav text band (`top-3`); invisible by default (`opacity-0`), fades in on `hover` / `focus-within` (200ms). `@media (hover: none)` escape keeps it always visible on touch devices. Menu-open state pins opacity to 100.
+
+### Open follow-ups (small, deferred from review)
+
+- [ ] **Arrow-key nav inside the menu.** APG `menuitemradio` pattern expects Up/Down to move focus between items; currently only Tab + click work. Not a WCAG failure but expected by keyboard-power users.
+- [ ] **Trigger `aria-label` flicker on hydration when stored ≠ system.** `useState('system')` renders the trigger with "Color theme: System" until `useEffect` reads localStorage and re-renders. The visual page theme itself never flashes (the bootstrap script handles that pre-paint). Fix: lazy-init `useState(() => getStoredTheme())`.
+- [ ] **Spec drift to clean up.** `docs/superpowers/specs/2026-05-11-cv-themes-design.md` §3.3 and §6.3 still describe the scanline overlay at opacity ~0.04; the implementation ships at 0.25. Pure doc fix.
 
 ---
 
