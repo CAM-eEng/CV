@@ -43,7 +43,7 @@ const csp =
 ---
 
 <!doctype html>
-<html lang="en" class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -59,7 +59,7 @@ const csp =
     <meta property="og:type" content="website" />
     <slot name="head" />
   </head>
-  <body class="font-sans antialiased">
+  <body class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 font-sans antialiased">
     <Nav />
     <main class="mx-auto max-w-3xl px-6 py-12">
       <slot />

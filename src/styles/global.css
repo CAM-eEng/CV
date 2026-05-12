@@ -1,9 +1,32 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
+/* Class-based dark variant — `dark:` Tailwind classes fire when <html> has
+   the `dark` class (or any descendant). Specificity is held at 0 via :where. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* CSS variables for the palette axis. Existing components keep using
+   Tailwind tokens (bg-white dark:bg-neutral-950 etc.) — matrix overrides
+   happen at the global level only via the `[data-theme="matrix"]` block
+   in Task 6. */
+:root {
+  --cv-bg: var(--color-white);
+  --cv-fg: var(--color-neutral-900);
+  --cv-accent: var(--color-blue-600);
+  --cv-surface: var(--color-neutral-50);
+  --cv-font-body: var(--font-sans);
+}
+
+:where(.dark) {
+  --cv-bg: var(--color-neutral-950);
+  --cv-fg: var(--color-neutral-100);
+  --cv-accent: var(--color-blue-400);
+  --cv-surface: var(--color-neutral-900);
 }
 
 html {
