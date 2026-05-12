@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { AnthropicProvider } from '~/lib/ai/anthropic';
+import { z } from 'zod';
 
 const ssEvent = (event: string, data: object) =>
   `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -88,5 +89,54 @@ describe('AnthropicProvider', () => {
         void _chunk;
       }
     }).rejects.toThrow(/bad key/);
+  });
+});
+
+describe('AnthropicProvider.structured — injection-resistant shape', () => {
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          content: [{ text: '{"ok":true}' }],
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+  });
+
+  afterEach(() => {
+    fetchSpy.mockRestore();
+  });
+
+  it('sends two user messages: body, then response instruction', async () => {
+    const p = new AnthropicProvider('test-key', 'system text');
+    await p.structured({ prompt: 'BODY_HERE', schema: z.object({ ok: z.boolean() }) });
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]!.body as string) as {
+      messages: Array<{ role: string; content: string }>;
+    };
+    expect(body.messages).toHaveLength(2);
+    expect(body.messages[0]).toEqual({ role: 'user', content: 'BODY_HERE' });
+    expect(body.messages[1].role).toBe('user');
+    expect(body.messages[1].content).toMatch(/JSON/);
+    expect(body.messages[1].content).not.toContain('BODY_HERE');
+  });
+
+  it('uses formatProviderError on non-OK responses', async () => {
+    fetchSpy.mockResolvedValueOnce(new Response('rate limited', { status: 429 }));
+    const p = new AnthropicProvider('test-key', '');
+    await expect(
+      p.structured({ prompt: 'x', schema: z.object({ ok: z.boolean() }) }),
+    ).rejects.toThrowError(/^anthropic error \(429\): rate limited$/);
+  });
+
+  it('chat() uses formatProviderError on non-OK responses', async () => {
+    fetchSpy.mockResolvedValueOnce(new Response('server boom', { status: 500 }));
+    const p = new AnthropicProvider('test-key', '');
+    const it = p.chat({ messages: [{ role: 'user', content: 'hi' }] });
+    await expect(it[Symbol.asyncIterator]().next()).rejects.toThrowError(
+      /^anthropic error \(500\): server boom$/,
+    );
   });
 });
