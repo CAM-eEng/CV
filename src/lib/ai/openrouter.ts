@@ -1,4 +1,6 @@
 import type { AIProvider, ChatChunk, ChatOpts, ModelInfo, StructuredOpts } from './provider';
+import { JD_RESPONSE_INSTRUCTION } from './jd-schema';
+import { formatProviderError } from './errors';
 
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -65,7 +67,7 @@ export class OpenRouterProvider implements AIProvider {
       }),
       signal: opts.signal,
     });
-    if (!res.ok) throw new Error(`OpenRouter API error (${res.status}): ${await res.text()}`);
+    if (!res.ok) throw new Error(formatProviderError('openrouter', res.status, await res.text()));
 
     let total = 0;
     for await (const ev of parseOpenRouterSSE(res.body!)) {
@@ -84,16 +86,19 @@ export class OpenRouterProvider implements AIProvider {
   }
 
   async structured<T>(opts: StructuredOpts<T>): Promise<T> {
+    const systemMessage = [this.systemPrompt, JD_RESPONSE_INSTRUCTION].filter(Boolean).join('\n\n');
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${this.token}`,
+        'HTTP-Referer': 'https://cameronhartman.dev',
+        'X-Title': 'Cameron Hartman CV',
       },
       body: JSON.stringify({
         model: opts.model ?? this.defaultModel,
         messages: [
-          ...(this.systemPrompt ? [{ role: 'system', content: this.systemPrompt }] : []),
+          ...(systemMessage ? [{ role: 'system', content: systemMessage }] : []),
           { role: 'user', content: opts.prompt },
         ],
         response_format: { type: 'json_object' },
@@ -101,7 +106,7 @@ export class OpenRouterProvider implements AIProvider {
       signal: opts.signal,
     });
     if (!res.ok)
-      throw new Error(`OpenRouter structured error (${res.status}): ${await res.text()}`);
+      throw new Error(formatProviderError('openrouter', res.status, await res.text()));
     const json = (await res.json()) as OpenRouterStructuredResponse;
     const content = json.choices?.[0]?.message?.content ?? '{}';
     return opts.schema.parse(JSON.parse(content));
