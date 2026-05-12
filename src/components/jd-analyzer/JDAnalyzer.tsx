@@ -4,7 +4,7 @@ import { ConnectSheet } from '~/components/byok/ConnectSheet';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
 import { readSession } from '~/lib/ai/session';
-import { JDFitSchema, type JDFit, buildJDPrompt } from '~/lib/ai/jd-schema';
+import { JDFitSchema, type JDFit, buildJDPromptBody } from '~/lib/ai/jd-schema';
 import type { CV } from '~/lib/content/cv-schema';
 
 export function JDAnalyzer({ cv }: { cv: CV }) {
@@ -27,7 +27,7 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
     setFit(null);
     try {
       const provider = getActiveProvider(systemPrompt);
-      const result = await provider.structured({ prompt: buildJDPrompt(jd), schema: JDFitSchema });
+      const result = await provider.structured({ prompt: buildJDPromptBody(jd, cv.basics.summary), schema: JDFitSchema });
       setFit(result);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
