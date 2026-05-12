@@ -118,7 +118,18 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
         {busy ? 'Analyzing…' : 'Analyze fit'}
       </button>
       {err && <p className="text-xs text-red-600">{err}</p>}
-      {fit && <ResultCard fit={fit} />}
+      {fit && (
+        <>
+          {readSession()?.providerId === 'demo' && (
+            <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+              <strong>Demo mode:</strong> this is a sample analysis. The demo provider returns the
+              same response regardless of the pasted job description. Connect a real provider
+              (OpenRouter, Anthropic, OpenAI) for an analysis that actually reads your JD.
+            </p>
+          )}
+          <ResultCard fit={fit} />
+        </>
+      )}
       <ConnectSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
