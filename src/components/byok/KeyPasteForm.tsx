@@ -41,7 +41,7 @@ export function KeyPasteForm({ providerId, defaultModel, onConnected }: Props) {
       className="space-y-3"
     >
       <div className="text-xs text-neutral-500 dark:text-neutral-400">
-        <span aria-hidden>🔒</span>{' '}You are pasting into{' '}
+        <span aria-hidden>🔒</span> You are pasting into{' '}
         <code className="font-mono">{hostname}</code>. Verify the address bar before submitting.
       </div>
       <label className="block text-sm">

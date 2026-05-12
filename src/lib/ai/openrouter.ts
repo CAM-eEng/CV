@@ -105,8 +105,7 @@ export class OpenRouterProvider implements AIProvider {
       }),
       signal: opts.signal,
     });
-    if (!res.ok)
-      throw new Error(formatProviderError('openrouter', res.status, await res.text()));
+    if (!res.ok) throw new Error(formatProviderError('openrouter', res.status, await res.text()));
     const json = (await res.json()) as OpenRouterStructuredResponse;
     const content = json.choices?.[0]?.message?.content ?? '{}';
     return opts.schema.parse(JSON.parse(content));

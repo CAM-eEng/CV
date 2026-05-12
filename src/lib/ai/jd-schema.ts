@@ -24,10 +24,7 @@ export type JDFit = z.infer<typeof JDFitSchema>;
 // lives in JD_RESPONSE_INSTRUCTION so providers can place it in the correct
 // structural slot (separate message or system field).
 export function buildJDPromptBody(jobDescription: string, summary: string): string {
-  const escaped = jobDescription.replaceAll(
-    '</job_description>',
-    '</job_description-escaped>',
-  );
+  const escaped = jobDescription.replaceAll('</job_description>', '</job_description-escaped>');
   return `You are an analyst comparing a job description to Cameron Hartman's profile.
 
 Cameron's summary:

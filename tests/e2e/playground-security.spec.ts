@@ -44,10 +44,15 @@ test.describe('Playground security', () => {
   test('domain badge displays current hostname in BYOK paste form', async ({ page }) => {
     await page.addInitScript(() => sessionStorage.setItem('ai-terms-accepted-v1', 'yes'));
     await page.goto('/playground/');
-    await page.getByText(/Connect to ask|Change provider/i).first().click();
+    await page
+      .getByText(/Connect to ask|Change provider/i)
+      .first()
+      .click();
     const anthropicBtn = page.getByRole('button', { name: /anthropic/i }).first();
     if (await anthropicBtn.isVisible()) await anthropicBtn.click();
     await expect(page.getByText(/pasting into/i)).toBeVisible();
-    await expect(page.locator('code').filter({ hasText: /localhost|cameronhartman/ })).toBeVisible();
+    await expect(
+      page.locator('code').filter({ hasText: /localhost|cameronhartman/ }),
+    ).toBeVisible();
   });
 });

@@ -37,7 +37,9 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
       return;
     }
     if (jdLimitReached()) {
-      setErr(`Session limit reached (${MAX_JD_ANALYSES_PER_SESSION} analyses). Refresh the page to reset.`);
+      setErr(
+        `Session limit reached (${MAX_JD_ANALYSES_PER_SESSION} analyses). Refresh the page to reset.`,
+      );
       return;
     }
     setBusy(true);

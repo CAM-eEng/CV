@@ -85,10 +85,7 @@ export function Chat({ cv }: Props) {
     } catch (e) {
       accumulated += `\n\n_Error: ${e instanceof Error ? e.message : String(e)}_`;
     }
-    setMessages([
-      ...next,
-      { role: 'assistant', content: filter(accumulated).sanitized },
-    ]);
+    setMessages([...next, { role: 'assistant', content: filter(accumulated).sanitized }]);
     setPendingAssistant('');
     setBusy(false);
   }

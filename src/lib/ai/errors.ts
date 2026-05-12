@@ -6,10 +6,6 @@ export function truncateError(body: string, max = 200): string {
   return flat.slice(0, max) + '...';
 }
 
-export function formatProviderError(
-  provider: ProviderName,
-  status: number,
-  body: string,
-): string {
+export function formatProviderError(provider: ProviderName, status: number, body: string): string {
   return `${provider} error (${status}): ${truncateError(body)}`;
 }

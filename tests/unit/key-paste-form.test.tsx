@@ -18,7 +18,9 @@ afterEach(() => {
 
 describe('KeyPasteForm — uncontrolled input', () => {
   it('renders the domain badge with current hostname', () => {
-    render(<KeyPasteForm providerId="anthropic" defaultModel="claude-opus-4-7" onConnected={() => {}} />);
+    render(
+      <KeyPasteForm providerId="anthropic" defaultModel="claude-opus-4-7" onConnected={() => {}} />,
+    );
     expect(screen.getByText(/pasting into/i)).toBeInTheDocument();
     // jsdom default hostname is 'localhost'.
     expect(screen.getByText('localhost')).toBeInTheDocument();
@@ -26,7 +28,13 @@ describe('KeyPasteForm — uncontrolled input', () => {
 
   it('submits the typed value to writeSession and clears the input', () => {
     const onConnected = vi.fn();
-    render(<KeyPasteForm providerId="anthropic" defaultModel="claude-opus-4-7" onConnected={onConnected} />);
+    render(
+      <KeyPasteForm
+        providerId="anthropic"
+        defaultModel="claude-opus-4-7"
+        onConnected={onConnected}
+      />,
+    );
     const input = screen.getByLabelText(/API key/i) as HTMLInputElement;
     fireEvent.input(input, { target: { value: 'sk-ant-test-123' } });
     fireEvent.submit(input.form!);

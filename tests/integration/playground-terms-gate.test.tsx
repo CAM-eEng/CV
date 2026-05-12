@@ -29,7 +29,9 @@ afterEach(() => {
 describe('Playground terms gate enforcement', () => {
   it('Chat shows placeholder when terms are not accepted', () => {
     render(<Chat cv={cvFixture} />);
-    expect(screen.getByText(/Accept the playground terms above to use the chat/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Accept the playground terms above to use the chat/i),
+    ).toBeInTheDocument();
   });
 
   it('JDAnalyzer shows placeholder when terms are not accepted', () => {

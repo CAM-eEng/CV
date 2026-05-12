@@ -44,9 +44,7 @@ describe('SafeMarkdown', () => {
 
 describe('SafeMarkdown — URI scheme allowlist', () => {
   it('strips javascript: hrefs', () => {
-    const { container } = render(
-      <SafeMarkdown content={'[click](javascript:alert(1))'} />,
-    );
+    const { container } = render(<SafeMarkdown content={'[click](javascript:alert(1))'} />);
     const a = container.querySelector('a');
     expect(a?.getAttribute('href') ?? '').not.toMatch(/^javascript:/i);
   });
@@ -60,9 +58,7 @@ describe('SafeMarkdown — URI scheme allowlist', () => {
   });
 
   it('strips vbscript: hrefs', () => {
-    const { container } = render(
-      <SafeMarkdown content={'[click](vbscript:msgbox(1))'} />,
-    );
+    const { container } = render(<SafeMarkdown content={'[click](vbscript:msgbox(1))'} />);
     const a = container.querySelector('a');
     expect(a?.getAttribute('href') ?? '').not.toMatch(/^vbscript:/i);
   });
