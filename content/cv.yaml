@@ -9,7 +9,7 @@ basics:
     leading the engineering team's first AI project (Regression AI Agent
     using Snowflake + Azure Blob Storage + Python + Copilot Studio), driving
     Docker adoption, and shepherding native Linux support in the Visual
-    Studio toolchain. Background in Electrical Engineering, with experience
+    Studio using CMake. Background in Electrical Engineering, with experience
     in PCB design, embedded C++, Python test automation, and with Spectrum
     Analyzers, VNAs, and Oscilloscopes.
   location:
@@ -40,7 +40,7 @@ work:
       - Use of SPI protocol to communicate with product devices including EEPROM, digital attenuators, and sensors.
       - "AI: Leading the LitePoint engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, Python, and Copilot Studio."
       - 'DevOps: Drove team adoption of Docker and integrated Jenkins to automate testing frameworks.'
-      - "Linux: Led the LitePoint engineering team's effort to support Linux natively in the Visual Studio editor."
+      - "Linux: Led the LitePoint engineering team's effort to support Linux natively in Visual Studio using CMake."
 
   - name: MyPitboard Inc.
     position: Hardware Software Design Engineer
