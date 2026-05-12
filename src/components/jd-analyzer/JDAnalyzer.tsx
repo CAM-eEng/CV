@@ -5,7 +5,7 @@ import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
 import { readSession } from '~/lib/ai/session';
 import { JDFitSchema, type JDFit, buildJDPromptBody } from '~/lib/ai/jd-schema';
-import { hasAcceptedTerms } from '~/lib/ai/terms';
+import { hasAcceptedTerms, TERMS_CHANGED_EVENT } from '~/lib/ai/terms';
 import {
   MAX_TEXT_INPUT_CHARS,
   MAX_JD_ANALYSES_PER_SESSION,
@@ -25,7 +25,10 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
   const [accepted, setAccepted] = useState<boolean>(false);
 
   useEffect(() => {
-    setAccepted(hasAcceptedTerms());
+    const refresh = () => setAccepted(hasAcceptedTerms());
+    refresh();
+    window.addEventListener(TERMS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(TERMS_CHANGED_EVENT, refresh);
   }, []);
 
   const systemPrompt = buildSystemPrompt(cv);

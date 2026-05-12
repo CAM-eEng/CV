@@ -7,7 +7,7 @@ import { ProviderStatus } from '~/components/byok/ProviderStatus';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
 import { readSession } from '~/lib/ai/session';
-import { hasAcceptedTerms } from '~/lib/ai/terms';
+import { hasAcceptedTerms, TERMS_CHANGED_EVENT } from '~/lib/ai/terms';
 import {
   MAX_CHAT_MESSAGES_PER_SESSION,
   incChatCount,
@@ -34,7 +34,10 @@ export function Chat({ cv }: Props) {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    setAccepted(hasAcceptedTerms());
+    const refresh = () => setAccepted(hasAcceptedTerms());
+    refresh();
+    window.addEventListener(TERMS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(TERMS_CHANGED_EVENT, refresh);
   }, []);
 
   useEffect(() => {
