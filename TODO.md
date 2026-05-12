@@ -2,7 +2,7 @@
 
 Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. Items are grouped by urgency. Read `READ-BEFORE-BURNING.md` before any operational change (DNS, secrets, Pages migration).
 
-**Last updated:** 2026-05-12
+**Last updated:** 2026-05-12 (after themes-foundation sweep)
 
 ---
 
@@ -99,6 +99,10 @@ Each was explicitly out-of-scope or deferred during planning. Pick up if/when va
 
 - [ ] **Cache language-byte queries** so the daily refresh doesn't re-pull the same data when nothing changed. Use the `If-Modified-Since` header or cache `pushed_at` per repo. Low priority — even at 30 repos × 1 call each, GitHub's authenticated rate limit (5,000/hr) makes this irrelevant.
 - [ ] **Healthcheck**: log a one-line summary in the workflow's output ("Wrote 365 days, 12 languages, 24 repos, htb: present") so failures are visible at a glance in `gh run list`.
+
+### Activity dashboard responsiveness
+
+- [ ] **Mobile horizontal overflow on `/`** ([#44](https://github.com/CAM-eEng/CV/issues/44)). Surfaced during the themes-foundation sweep: at 375px viewport, `body.scrollWidth` is 494px (light/dark/system) or 509px (matrix; +15px from monospace metrics). Pre-existing — not introduced by themes. Likely culprits: `ContributionHeatmap` (53 × 7 fixed cells ≈ 444px floor), `LanguagesDonut` (donut + side-by-side legend), `FreshnessTimeline` (fixed skill-name column). Fix sketch in the issue. Acceptance: `body.scrollWidth ≤ 377` at 375px viewport in every theme.
 
 ### Plan 2 polish (deferred)
 

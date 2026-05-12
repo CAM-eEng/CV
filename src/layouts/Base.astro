@@ -28,7 +28,16 @@ const astroInlineScriptHashes = [
   "'sha256-BF0290pkb3jxQsE7z00xR8Imp8X34FLC88L0lkMnrGw='",
   // client:visible bootstrap
   "'sha256-Q2BPg90ZMplYY+FSdApNErhpWafg2hcRRbndmvxuL/Q='",
+  // theme bootstrap — pre-paint script that sets dark/matrix on <html>
+  "'sha256-LAXxizZyPPdYSZ+gR+tQvyYXTgnCiNET1BDJF7dtCho='",
 ].join(' ');
+
+// Pre-paint theme bootstrap. Runs synchronously in <head> before first paint
+// to avoid flash of the wrong theme. Reads localStorage('cv.theme'), resolves
+// against `prefers-color-scheme`, and sets attributes on <html>. Mirrors the
+// logic in src/lib/theme.ts but is intentionally separate: this version has
+// to be tiny and inlineable, and it can't import anything.
+const themeBootstrap = `(function(){try{var s=localStorage.getItem('cv.theme')||'system';var p=matchMedia('(prefers-color-scheme: dark)').matches;var d=s==='dark'||s==='matrix'||(s==='system'&&p);var h=document.documentElement;if(d)h.classList.add('dark');if(s==='matrix')h.setAttribute('data-theme','matrix');}catch(e){}})();`;
 
 const csp =
   "default-src 'self'; " +
@@ -43,10 +52,11 @@ const csp =
 ---
 
 <!doctype html>
-<html lang="en" class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline set:html={themeBootstrap} />
     <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -59,7 +69,9 @@ const csp =
     <meta property="og:type" content="website" />
     <slot name="head" />
   </head>
-  <body class="font-sans antialiased">
+  <body
+    class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 font-sans antialiased"
+  >
     <Nav />
     <main class="mx-auto max-w-3xl px-6 py-12">
       <slot />
