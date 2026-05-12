@@ -10,8 +10,8 @@ const ANSWERS: Array<{ keywords: RegExp; text: string }> = [
     text: `Cameron drove the LitePoint engineering team's adoption of Docker and worked with Jenkins to automate testing frameworks [work.0.highlights.5]. This was a cross-team initiative, not just personal tooling.`,
   },
   {
-    keywords: /\b(linux|toolchain|visual studio|vs studio)\b/i,
-    text: `Cameron led the LitePoint engineering team's effort to support Linux natively in the Visual Studio editor [work.0.highlights.6]. That's a non-trivial cross-platform integration effort given how Windows-centric the VS Studio stack has historically been.`,
+    keywords: /\b(linux|toolchain|visual studio|vs studio|cmake)\b/i,
+    text: `Cameron led the LitePoint engineering team's effort to support Linux natively in Visual Studio using CMake [work.0.highlights.6]. That's a non-trivial cross-platform integration effort — VS's CMake integration is the canonical path for Windows-developer-with-Linux-target workflows, but getting an existing toolchain there involves untangling whatever was previously Windows-specific.`,
   },
   {
     keywords: /\b(embedded|firmware|circuitpython|stm32|c\+\+|rf|microcontroller)\b/i,
