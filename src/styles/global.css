@@ -32,3 +32,70 @@
 html {
   -webkit-text-size-adjust: 100%;
 }
+
+/* ─── Matrix palette ───────────────────────────────────────────────── */
+
+[data-theme='matrix'] {
+  --cv-bg: #050b06;
+  --cv-fg: #39ff14;
+  --cv-accent: #9dff70;
+  --cv-surface: #081108;
+  --cv-font-body: var(--font-mono);
+}
+
+[data-theme='matrix'] body {
+  background-color: var(--cv-bg);
+  color: var(--cv-fg);
+  font-family: var(--cv-font-body);
+}
+
+[data-theme='matrix'] body::before {
+  /* Scanline overlay — subtle, GPU-composited, pointer-events:none so it
+     doesn't intercept clicks. Opacity is low enough that the contrast guard
+     in Task 7 passes against the base bg color alone. */
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.6) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  opacity: 0.04;
+  z-index: 1;
+}
+
+[data-theme='matrix'] h1,
+[data-theme='matrix'] h2,
+[data-theme='matrix'] h3 {
+  text-shadow: 0 0 6px rgba(57, 255, 20, 0.45);
+}
+
+[data-theme='matrix'] a {
+  color: var(--cv-accent);
+}
+
+/* Blinking terminal cursor on the homepage hero title.
+   Suppressed under prefers-reduced-motion. */
+[data-theme='matrix'] .cv-hero-title::after {
+  content: '▮';
+  display: inline-block;
+  margin-left: 0.25em;
+  color: var(--cv-accent);
+  animation: cv-blink 1s steps(1) infinite;
+}
+
+@keyframes cv-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='matrix'] .cv-hero-title::after {
+    animation: none;
+    opacity: 1;
+  }
+}
