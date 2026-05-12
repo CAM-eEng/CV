@@ -128,7 +128,7 @@ export function ThemeToggle() {
             ].join(' ')}
           >
             {seg.icon}
-            <span className="hidden sm:inline">{seg.label}</span>
+            <span className="hidden md:inline">{seg.label}</span>
           </button>
         );
       })}
