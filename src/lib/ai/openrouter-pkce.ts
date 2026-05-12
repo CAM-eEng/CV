@@ -73,3 +73,18 @@ export function readAndClearPendingPkce(): { verifier: string; state: string } |
   if (!verifier || !state) return null;
   return { verifier, state };
 }
+
+const TRUSTED_HOSTS: ReadonlySet<string> = new Set([
+  'cameronhartman.dev',
+  'cam-eeng.github.io',
+  'localhost',
+  '127.0.0.1',
+]);
+
+export function assertTrustedOrigin(): void {
+  if (typeof window === 'undefined') return;
+  const host = window.location.hostname;
+  if (!TRUSTED_HOSTS.has(host)) {
+    throw new Error(`OAuth refused — page served from untrusted origin: ${host}`);
+  }
+}

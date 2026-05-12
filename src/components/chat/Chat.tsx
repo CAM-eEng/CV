@@ -7,6 +7,15 @@ import { ProviderStatus } from '~/components/byok/ProviderStatus';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
 import { readSession } from '~/lib/ai/session';
+import { hasAcceptedTerms, TERMS_CHANGED_EVENT } from '~/lib/ai/terms';
+import {
+  MAX_CHAT_MESSAGES_PER_SESSION,
+  incChatCount,
+  getChatCount,
+  chatLimitReached,
+  trimHistory,
+} from '~/lib/ai/limits';
+import { filter } from '~/lib/ai/moderation';
 import type { ChatMessage } from '~/lib/ai/provider';
 import type { CV } from '~/lib/content/cv-schema';
 
@@ -21,10 +30,18 @@ export function Chat({ cv }: Props) {
   const [cachedTokens, setCachedTokens] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [connectedTick, setConnectedTick] = useState(0);
+  const [accepted, setAccepted] = useState<boolean>(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    // Trigger re-render of ProviderStatus when session changes.
+    const refresh = () => setAccepted(hasAcceptedTerms());
+    refresh();
+    window.addEventListener(TERMS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(TERMS_CHANGED_EVENT, refresh);
+  }, []);
+
+  useEffect(() => {
+    /* connectedTick re-render trigger */
   }, [connectedTick]);
 
   const hasSession = readSession() !== null;
@@ -35,23 +52,35 @@ export function Chat({ cv }: Props) {
       setSheetOpen(true);
       return;
     }
-    const next = [...messages, { role: 'user' as const, content: text }];
+    if (chatLimitReached()) {
+      setMessages([
+        ...messages,
+        { role: 'user', content: text },
+        {
+          role: 'assistant',
+          content: `_Session limit reached (${MAX_CHAT_MESSAGES_PER_SESSION} messages). Refresh the page to reset._`,
+        },
+      ]);
+      return;
+    }
+    const next: ChatMessage[] = [...messages, { role: 'user', content: text }];
     setMessages(next);
     setPendingAssistant('');
     setBusy(true);
     setCachedTokens(0);
+    incChatCount();
 
     const provider = getActiveProvider(systemPrompt);
     abortRef.current = new AbortController();
     let accumulated = '';
     try {
       for await (const chunk of provider.chat({
-        messages: next,
+        messages: trimHistory(next),
         signal: abortRef.current.signal,
       })) {
         if (chunk.type === 'text') {
           accumulated += chunk.delta;
-          setPendingAssistant(accumulated);
+          setPendingAssistant(filter(accumulated).sanitized);
         } else if (chunk.type === 'cache-info') {
           setCachedTokens(chunk.cachedTokens);
         }
@@ -59,10 +88,24 @@ export function Chat({ cv }: Props) {
     } catch (e) {
       accumulated += `\n\n_Error: ${e instanceof Error ? e.message : String(e)}_`;
     }
-    setMessages([...next, { role: 'assistant' as const, content: accumulated }]);
+    setMessages([...next, { role: 'assistant', content: filter(accumulated).sanitized }]);
     setPendingAssistant('');
     setBusy(false);
   }
+
+  if (!accepted) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-sm uppercase tracking-wider text-neutral-500">Chat with my CV</h2>
+        <div className="rounded-md border border-neutral-200 dark:border-neutral-800 p-6 text-sm text-neutral-700 dark:text-neutral-300">
+          Accept the playground terms above to use the chat.
+        </div>
+      </div>
+    );
+  }
+
+  const count = getChatCount();
+  const showCounter = count >= 30;
 
   return (
     <div className="space-y-4">
@@ -92,6 +135,12 @@ export function Chat({ cv }: Props) {
           </p>
         )}
       </div>
+
+      {showCounter && (
+        <p className="text-xs text-neutral-500">
+          Messages this session: {count} / {MAX_CHAT_MESSAGES_PER_SESSION}
+        </p>
+      )}
 
       <div className="space-y-2">
         <InputBox disabled={busy} onSubmit={handleSubmit} />

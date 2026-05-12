@@ -22,14 +22,15 @@ const ALLOWED_TAGS = [
 ];
 const ALLOWED_ATTR = ['href', 'title', 'rel', 'target'];
 
+// Explicit href scheme allowlist. Closes javascript:, data:, vbscript:,
+// file:, etc. by name rather than by DOMPurify's default URI sanitizer.
+// Also allows relative URLs (starting with /, ./, ../, or #).
+const ALLOWED_URI_REGEXP = /^(?:https?|mailto):|^[/#.]/i;
+
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-  // Use tagName check (cross-realm safe) instead of instanceof, which fails
-  // when DOMPurify's jsdom realm differs from the test/runtime realm.
+  // tagName check is cross-realm safe (jsdom vs runtime realms).
   if (node.nodeName === 'A') {
     (node as Element).setAttribute('rel', 'noopener noreferrer');
-    if ((node as Element).getAttribute('target') === '_blank') {
-      // keep target, rel already set
-    }
   }
 });
 
@@ -39,6 +40,7 @@ export function SafeMarkdown({ content }: { content: string }) {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP,
   });
   return (
     <div className="prose prose-sm dark:prose-invert" dangerouslySetInnerHTML={{ __html: clean }} />

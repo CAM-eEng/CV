@@ -1,4 +1,6 @@
 import type { AIProvider, ChatChunk, ChatOpts, ModelInfo, StructuredOpts } from './provider';
+import { JD_RESPONSE_INSTRUCTION } from './jd-schema';
+import { formatProviderError } from './errors';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
@@ -62,7 +64,7 @@ export class AnthropicProvider implements AIProvider {
 
     if (!res.ok) {
       const txt = await res.text();
-      throw new Error(`Anthropic API error (${res.status}): ${txt}`);
+      throw new Error(formatProviderError('anthropic', res.status, txt));
     }
 
     let total = 0;
@@ -104,17 +106,13 @@ export class AnthropicProvider implements AIProvider {
         max_tokens: 4096,
         system: this.systemPrompt,
         messages: [
-          {
-            role: 'user',
-            content:
-              opts.prompt +
-              '\n\nRespond with ONLY a JSON object matching the expected shape, no prose.',
-          },
+          { role: 'user', content: opts.prompt },
+          { role: 'user', content: JD_RESPONSE_INSTRUCTION },
         ],
       }),
       signal: opts.signal,
     });
-    if (!res.ok) throw new Error(`Anthropic structured error (${res.status}): ${await res.text()}`);
+    if (!res.ok) throw new Error(formatProviderError('anthropic', res.status, await res.text()));
     const json = (await res.json()) as { content?: Array<{ text?: string }> };
     const text = json.content?.[0]?.text ?? '';
     const match = text.match(/\{[\s\S]*\}/);

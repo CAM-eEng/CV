@@ -7,6 +7,7 @@ import {
   generateState,
   buildAuthorizeUrl,
   storePendingPkce,
+  assertTrustedOrigin,
   CALLBACK_PATH,
 } from '~/lib/ai/openrouter-pkce';
 
@@ -23,6 +24,12 @@ export function ConnectSheet({ open, onClose, onConnected }: Props) {
   if (!open) return null;
 
   async function startOpenRouter() {
+    try {
+      assertTrustedOrigin();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+      return;
+    }
     const verifier = generateVerifier();
     const challenge = await challengeFromVerifier(verifier);
     const state = generateState();

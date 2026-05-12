@@ -1,4 +1,6 @@
 import type { AIProvider, ChatChunk, ChatOpts, ModelInfo, StructuredOpts } from './provider';
+import { JD_RESPONSE_INSTRUCTION } from './jd-schema';
+import { formatProviderError } from './errors';
 
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
@@ -53,7 +55,7 @@ export class OpenAIProvider implements AIProvider {
       }),
       signal: opts.signal,
     });
-    if (!res.ok) throw new Error(`OpenAI API error (${res.status}): ${await res.text()}`);
+    if (!res.ok) throw new Error(formatProviderError('openai', res.status, await res.text()));
 
     let total = 0;
     for await (const ev of parseOpenAISSE(res.body!)) {
@@ -72,6 +74,7 @@ export class OpenAIProvider implements AIProvider {
   }
 
   async structured<T>(opts: StructuredOpts<T>): Promise<T> {
+    const systemMessage = [this.systemPrompt, JD_RESPONSE_INSTRUCTION].filter(Boolean).join('\n\n');
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -81,14 +84,14 @@ export class OpenAIProvider implements AIProvider {
       body: JSON.stringify({
         model: opts.model ?? this.defaultModel,
         messages: [
-          ...(this.systemPrompt ? [{ role: 'system', content: this.systemPrompt }] : []),
+          ...(systemMessage ? [{ role: 'system', content: systemMessage }] : []),
           { role: 'user', content: opts.prompt },
         ],
         response_format: { type: 'json_object' },
       }),
       signal: opts.signal,
     });
-    if (!res.ok) throw new Error(`OpenAI structured error (${res.status}): ${await res.text()}`);
+    if (!res.ok) throw new Error(formatProviderError('openai', res.status, await res.text()));
     const json = (await res.json()) as OpenAIStructuredResponse;
     const content = json.choices?.[0]?.message?.content ?? '{}';
     return opts.schema.parse(JSON.parse(content));
