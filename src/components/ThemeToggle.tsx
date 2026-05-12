@@ -126,7 +126,15 @@ export function ThemeToggle() {
   const current = SEGMENTS.find((s) => s.value === stored) ?? SEGMENTS[3];
 
   return (
-    <div ref={containerRef} className="fixed top-4 right-4 z-20 text-xs">
+    <div
+      ref={containerRef}
+      className={[
+        'fixed top-3 right-4 z-20 text-xs transition-opacity duration-200',
+        open
+          ? 'opacity-100'
+          : 'opacity-0 hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100',
+      ].join(' ')}
+    >
       <button
         type="button"
         aria-haspopup="menu"
