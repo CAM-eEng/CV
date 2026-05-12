@@ -26,37 +26,54 @@ afterEach(() => {
   cleanup();
 });
 
+const openMenu = () => {
+  fireEvent.click(screen.getByRole('button', { name: /color theme/i }));
+};
+
 describe('ThemeToggle', () => {
-  it('renders four segments with role=radio', () => {
+  it('renders a closed dropdown by default — only the trigger is visible', () => {
     render(<ThemeToggle />);
-    const segs = screen.getAllByRole('radio');
-    expect(segs).toHaveLength(4);
-    expect(segs.map((s) => s.getAttribute('aria-label') || s.textContent)).toEqual(
-      expect.arrayContaining([
-        expect.stringMatching(/light/i),
-        expect.stringMatching(/dark/i),
-        expect.stringMatching(/matrix/i),
-        expect.stringMatching(/system/i),
-      ]),
+    const trigger = screen.getByRole('button', { name: /color theme/i });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryAllByRole('menuitemradio')).toHaveLength(0);
+  });
+
+  it('opens the menu on trigger click and shows four menuitemradio entries', () => {
+    render(<ThemeToggle />);
+    openMenu();
+    const items = screen.getAllByRole('menuitemradio');
+    expect(items).toHaveLength(4);
+    expect(items.map((s) => s.getAttribute('aria-label'))).toEqual(
+      expect.arrayContaining(['Light', 'Dark', 'Matrix', 'System']),
     );
   });
 
   it('defaults to System when no stored preference', () => {
     render(<ThemeToggle />);
-    const sys = screen.getByRole('radio', { name: /system/i });
+    openMenu();
+    const sys = screen.getByRole('menuitemradio', { name: /system/i });
     expect(sys.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('trigger advertises the current selection via aria-label', () => {
+    localStorage.setItem(STORAGE_KEY, 'matrix');
+    render(<ThemeToggle />);
+    const trigger = screen.getByRole('button', { name: /color theme/i });
+    expect(trigger.getAttribute('aria-label')).toMatch(/matrix/i);
   });
 
   it('reads stored preference on mount', () => {
     localStorage.setItem(STORAGE_KEY, 'matrix');
     render(<ThemeToggle />);
-    const matrix = screen.getByRole('radio', { name: /matrix/i });
+    openMenu();
+    const matrix = screen.getByRole('menuitemradio', { name: /matrix/i });
     expect(matrix.getAttribute('aria-checked')).toBe('true');
   });
 
   it('persists and applies on click — light', () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('radio', { name: /light/i }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /light/i }));
     expect(localStorage.getItem(STORAGE_KEY)).toBe('light');
     expect(document.documentElement.classList.contains('dark')).toBe(false);
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
@@ -64,7 +81,8 @@ describe('ThemeToggle', () => {
 
   it('persists and applies on click — dark', () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('radio', { name: /dark/i }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /dark/i }));
     expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
@@ -72,7 +90,8 @@ describe('ThemeToggle', () => {
 
   it('persists and applies on click — matrix', () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('radio', { name: /matrix/i }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /matrix/i }));
     expect(localStorage.getItem(STORAGE_KEY)).toBe('matrix');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
     expect(document.documentElement.getAttribute('data-theme')).toBe('matrix');
@@ -80,8 +99,18 @@ describe('ThemeToggle', () => {
 
   it('persists and applies on click — system resolves to light when OS prefers light', () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('radio', { name: /system/i }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /system/i }));
     expect(localStorage.getItem(STORAGE_KEY)).toBe('system');
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+  });
+
+  it('closes the menu after a selection', () => {
+    render(<ThemeToggle />);
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /dark/i }));
+    expect(screen.queryAllByRole('menuitemradio')).toHaveLength(0);
+    const trigger = screen.getByRole('button', { name: /color theme/i });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
   });
 });

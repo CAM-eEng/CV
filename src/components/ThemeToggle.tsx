@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   type Stored,
   STORAGE_KEY,
@@ -67,6 +67,8 @@ const SEGMENTS: ReadonlyArray<{ value: Stored; label: string; icon: ReactNode }>
 
 export function ThemeToggle() {
   const [stored, setStored] = useState<Stored>('system');
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const initial = getStoredTheme();
@@ -97,41 +99,74 @@ export function ThemeToggle() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
   const choose = (v: Stored) => {
     setStored(v);
     setStoredTheme(v);
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(resolveTheme(v, prefersDark), document.documentElement);
+    setOpen(false);
   };
 
+  const current = SEGMENTS.find((s) => s.value === stored) ?? SEGMENTS[3];
+
   return (
-    <fieldset
-      role="radiogroup"
-      aria-label="Color theme"
-      className="inline-flex items-center gap-0.5 rounded-md border border-neutral-200 dark:border-neutral-800 p-0.5 text-xs"
-    >
-      {SEGMENTS.map((seg) => {
-        const active = stored === seg.value;
-        return (
-          <button
-            key={seg.value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            aria-label={seg.label}
-            onClick={() => choose(seg.value)}
-            className={[
-              'inline-flex items-center gap-1 rounded px-2 py-1 transition-colors',
-              active
-                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100',
-            ].join(' ')}
-          >
-            {seg.icon}
-            <span className="hidden md:inline">{seg.label}</span>
-          </button>
-        );
-      })}
-    </fieldset>
+    <div ref={containerRef} className="fixed top-4 right-4 z-20 text-xs">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Color theme: ${current.label}`}
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 shadow-sm hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+      >
+        {current.icon}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label="Color theme"
+          className="absolute right-0 mt-2 min-w-[140px] rounded-md border border-neutral-200 bg-white p-1 shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+        >
+          {SEGMENTS.map((seg) => {
+            const active = stored === seg.value;
+            return (
+              <button
+                key={seg.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={active}
+                aria-label={seg.label}
+                onClick={() => choose(seg.value)}
+                className={[
+                  'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left',
+                  active
+                    ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                    : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
+                ].join(' ')}
+              >
+                {seg.icon}
+                <span>{seg.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
