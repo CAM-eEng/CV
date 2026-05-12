@@ -41,3 +41,61 @@ describe('SafeMarkdown', () => {
     }
   });
 });
+
+describe('SafeMarkdown — URI scheme allowlist', () => {
+  it('strips javascript: hrefs', () => {
+    const { container } = render(
+      <SafeMarkdown content={'[click](javascript:alert(1))'} />,
+    );
+    const a = container.querySelector('a');
+    expect(a?.getAttribute('href') ?? '').not.toMatch(/^javascript:/i);
+  });
+
+  it('strips data: hrefs', () => {
+    const { container } = render(
+      <SafeMarkdown content={'[click](data:text/html,<script>alert(1)</script>)'} />,
+    );
+    const a = container.querySelector('a');
+    expect(a?.getAttribute('href') ?? '').not.toMatch(/^data:/i);
+  });
+
+  it('strips vbscript: hrefs', () => {
+    const { container } = render(
+      <SafeMarkdown content={'[click](vbscript:msgbox(1))'} />,
+    );
+    const a = container.querySelector('a');
+    expect(a?.getAttribute('href') ?? '').not.toMatch(/^vbscript:/i);
+  });
+
+  it('preserves http: hrefs', () => {
+    const { container } = render(<SafeMarkdown content={'[ok](http://example.com)'} />);
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('http://example.com');
+  });
+
+  it('preserves https: hrefs', () => {
+    const { container } = render(<SafeMarkdown content={'[ok](https://example.com)'} />);
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('https://example.com');
+  });
+
+  it('preserves mailto: hrefs', () => {
+    const { container } = render(<SafeMarkdown content={'[ok](mailto:a@b.c)'} />);
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('mailto:a@b.c');
+  });
+});
+
+describe('SafeMarkdown — unconditional rel attribute', () => {
+  it('adds rel=noopener noreferrer on plain links', () => {
+    const { container } = render(<SafeMarkdown content={'[ok](https://example.com)'} />);
+    expect(container.querySelector('a')?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('keeps rel=noopener noreferrer on target=_blank links', () => {
+    const { container } = render(
+      <SafeMarkdown content={'<a href="https://example.com" target="_blank">x</a>'} />,
+    );
+    const a = container.querySelector('a');
+    if (a) {
+      expect(a.getAttribute('rel')).toBe('noopener noreferrer');
+    }
+  });
+});
