@@ -37,7 +37,7 @@ describe('ThemeToggle', () => {
         expect.stringMatching(/dark/i),
         expect.stringMatching(/matrix/i),
         expect.stringMatching(/system/i),
-      ])
+      ]),
     );
   });
 

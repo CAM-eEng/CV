@@ -15,7 +15,13 @@ const SEGMENTS: ReadonlyArray<{ value: Stored; label: string; icon: ReactNode }>
     icon: (
       <svg aria-hidden viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
         <circle cx="8" cy="8" r="3" />
-        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+        <path
+          d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          fill="none"
+        />
       </svg>
     ),
   },
@@ -43,7 +49,15 @@ const SEGMENTS: ReadonlyArray<{ value: Stored; label: string; icon: ReactNode }>
     value: 'system',
     label: 'System',
     icon: (
-      <svg aria-hidden viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <svg
+        aria-hidden
+        viewBox="0 0 16 16"
+        width="14"
+        height="14"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      >
         <rect x="2" y="3" width="12" height="8" rx="1" />
         <path d="M6 13h4M8 11v2" strokeLinecap="round" />
       </svg>

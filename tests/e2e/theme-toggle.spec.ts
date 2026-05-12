@@ -5,7 +5,10 @@ test.describe('Theme toggle', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
     await expect(page.locator('html')).not.toHaveClass(/(^| )dark( |$)/);
-    await expect(page.getByRole('radio', { name: 'System' })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('radio', { name: 'System' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
   test('default is system, OS-dark → dark class applied', async ({ page }) => {
@@ -36,9 +39,7 @@ test.describe('Theme toggle', () => {
     await expect(page.locator('html')).toHaveClass(/(^| )dark( |$)/);
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'matrix');
     // Foreground swatch is the neon green.
-    const fg = await page.evaluate(() =>
-      getComputedStyle(document.body).color
-    );
+    const fg = await page.evaluate(() => getComputedStyle(document.body).color);
     // jsdom-style "rgb(57, 255, 20)" — assert green-dominant.
     const match = fg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
     expect(match).not.toBeNull();
@@ -53,7 +54,10 @@ test.describe('Theme toggle', () => {
     await page.getByRole('radio', { name: 'Matrix' }).click();
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'matrix');
-    await expect(page.getByRole('radio', { name: 'Matrix' })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('radio', { name: 'Matrix' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
   test('system mode reacts to OS-pref change live', async ({ page }) => {
@@ -65,11 +69,15 @@ test.describe('Theme toggle', () => {
     await expect(page.locator('html')).toHaveClass(/(^| )dark( |$)/);
   });
 
-  test('no FOUC: html attributes are set before first paint when stored=matrix', async ({ page }) => {
+  test('no FOUC: html attributes are set before first paint when stored=matrix', async ({
+    page,
+  }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('cv.theme', 'matrix'));
     await page.reload();
-    const dataTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    const dataTheme = await page.evaluate(() =>
+      document.documentElement.getAttribute('data-theme'),
+    );
     expect(dataTheme).toBe('matrix');
   });
 });

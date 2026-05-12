@@ -56,7 +56,7 @@ const csp =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script is:inline set:html={themeBootstrap}></script>
+    <script is:inline set:html={themeBootstrap} />
     <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -69,7 +69,9 @@ const csp =
     <meta property="og:type" content="website" />
     <slot name="head" />
   </head>
-  <body class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 font-sans antialiased">
+  <body
+    class="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 font-sans antialiased"
+  >
     <Nav />
     <main class="mx-auto max-w-3xl px-6 py-12">
       <slot />

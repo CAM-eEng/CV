@@ -9,16 +9,17 @@ import {
 } from '~/lib/theme';
 
 describe('resolveTheme', () => {
-  const cases: Array<[Stored, boolean, { mode: 'light' | 'dark'; palette: 'default' | 'matrix' }]> = [
-    ['light', false, { mode: 'light', palette: 'default' }],
-    ['light', true, { mode: 'light', palette: 'default' }],
-    ['dark', false, { mode: 'dark', palette: 'default' }],
-    ['dark', true, { mode: 'dark', palette: 'default' }],
-    ['matrix', false, { mode: 'dark', palette: 'matrix' }],
-    ['matrix', true, { mode: 'dark', palette: 'matrix' }],
-    ['system', false, { mode: 'light', palette: 'default' }],
-    ['system', true, { mode: 'dark', palette: 'default' }],
-  ];
+  const cases: Array<[Stored, boolean, { mode: 'light' | 'dark'; palette: 'default' | 'matrix' }]> =
+    [
+      ['light', false, { mode: 'light', palette: 'default' }],
+      ['light', true, { mode: 'light', palette: 'default' }],
+      ['dark', false, { mode: 'dark', palette: 'default' }],
+      ['dark', true, { mode: 'dark', palette: 'default' }],
+      ['matrix', false, { mode: 'dark', palette: 'matrix' }],
+      ['matrix', true, { mode: 'dark', palette: 'matrix' }],
+      ['system', false, { mode: 'light', palette: 'default' }],
+      ['system', true, { mode: 'dark', palette: 'default' }],
+    ];
 
   it.each(cases)('stored=%s prefersDark=%s → %o', (stored, prefersDark, expected) => {
     expect(resolveTheme(stored, prefersDark)).toEqual(expected);
