@@ -64,7 +64,7 @@ html {
     rgba(0, 0, 0, 0.6) 3px,
     rgba(0, 0, 0, 0) 4px
   );
-  opacity: 0.04;
+  opacity: 0.25;
   z-index: 1;
 }
 
