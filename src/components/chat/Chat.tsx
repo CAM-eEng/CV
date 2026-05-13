@@ -58,7 +58,7 @@ export function Chat({ cv }: Props) {
         { role: 'user', content: text },
         {
           role: 'assistant',
-          content: `_Session limit reached (${MAX_CHAT_MESSAGES_PER_SESSION} messages). Refresh the page to reset._`,
+          content: `_Session limit reached (${MAX_CHAT_MESSAGES_PER_SESSION} messages). Close and reopen this tab to reset._`,
         },
       ]);
       return;
