@@ -11,6 +11,7 @@ Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. 
 Items that were considered and explicitly rejected — recorded so they don't keep getting re-raised. If reopening one, note WHY the original decision is no longer valid.
 
 - **No email on `cameronhartman.dev`** (decided 2026-05-12). The null MX record (`0 .`) declares the domain refuses inbound email, which makes spoofing `@cameronhartman.dev` substantially harder. Cloudflare Email Routing would work fine alongside the GitHub Pages setup, but enabling it requires removing the null MX and that trade — anti-spoofing posture vs. having `info@`/`hello@`/etc. — isn't worth it for a personal CV. Do not propose vanity addresses on this domain without revisiting this decision.
+- **No `5easy` project on the site** (decided 2026-05-13). The `5easy` D&D 5e character manager (TypeScript + Supabase, repo private) was originally flagged `featured: true` in `cv.yaml` projects. Cameron decided it doesn't belong on the public CV. The cv.yaml entry has been removed entirely — no Featured Repos carousel card, no `/cv.json` listing, no JSON-LD entry, no `/projects/5easy/` case study. Do not re-add a `5easy` entry without revisiting this decision.
 
 ---
 
@@ -90,7 +91,6 @@ Shipped 2026-05-12 across three PRs:
 ### Project case studies
 
 - [ ] Replace the placeholder body in `content/projects/leddisplay.mdx`. Headings are scaffolded (Problem / Approach / What I built / What I learned) — fill in real narrative. The LedDisplay auto-memory at `~/.claude/projects/-home-dexter/memory/project_leddisplay.md` has detailed technical context (1/16 vs 1/32 scan investigation, panel-compatibility findings, USB-C power constraints, two-step deploy workflow) — paste from there.
-- [ ] Decide whether to add a `content/projects/5easy.mdx` case study. Currently `5easy` appears in `cv.yaml` projects with `featured: true`, so it'll show in the Featured Repos carousel once Plan 3 secrets are set — but there's no long-form case study at `/projects/5easy/`. Either write one or remove `featured: true` from the cv.yaml entry.
 - [ ] Decide whether the two historical academic projects (`Testing Interface for RF Amplifier` 2019, `Solar Microinverter` 2018) belong in `cv.yaml`. They were ported from the legacy resume.pdf. If you want them visible: add MDX case studies. If not: remove from `cv.yaml`.
 
 ### CV body

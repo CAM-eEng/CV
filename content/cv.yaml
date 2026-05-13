@@ -166,15 +166,6 @@ projects:
     url: https://github.com/CAM-eEng/LedDisplay
     featured: true
 
-  - name: 5easy
-    description: D&D 5e character manager web app — full-stack TypeScript with Supabase.
-    keywords:
-      - TypeScript
-      - React
-      - Supabase
-    startDate: '2026-04'
-    featured: true
-
   - name: Testing Interface for RF Amplifier
     description: Qt user interface and Python scripts in VS Code for testing and validation of high-power amplifiers; firmware in C++ on Arduino Mega.
     keywords:
