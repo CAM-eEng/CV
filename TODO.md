@@ -56,21 +56,6 @@ Shipped 2026-05-12 across three PRs:
 
 ---
 
-## 🟢 Plan 3 status — live with real data
-
-- [x] **GH_API_TOKEN set + rotated** after the original was exposed in chat.
-- [x] **HTB switched from API → manual JSON.** HackTheBox no longer exposes self-service app tokens for many account tiers; replaced with `data/htb-manual.json` (gitignore-safe, hand-edited).
-- [x] **Refresh workflow** opens a PR (auto-merge on CI pass) instead of pushing direct to main; bypasses branch-protection bot-rejection.
-- [x] **First refresh ran successfully.** `data/activity.json` now reflects real GitHub data (48 contributions over the year, real repo set, real language donut, real freshness timeline). Dashboard at `cameronhartman.dev/` shows the live data.
-
-### Still to do (optional / async)
-
-- [ ] **Fill in `data/htb-manual.json`** (work in progress — file created from template). Edit `rank`, `points`, `ownedMachines`, and `categories` with real values; remove the `_doc` field; commit + PR. The next refresh will publish the HTB card.
-
-- [ ] **Make LedDisplay public** so the Featured Repos section appears. Currently `cv.yaml` flags LedDisplay + 5easy as `featured: true` but both are private, so the carousel filter returns nothing and the section is hidden. Flipping LedDisplay public surfaces it automatically on the next refresh.
-
----
-
 ## 🟡 Calendar / recurring
 
 ### PAT rotation (day 80)
