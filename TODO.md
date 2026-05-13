@@ -6,6 +6,14 @@ Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. 
 
 ---
 
+## ⛔ Decided NOT to do
+
+Items that were considered and explicitly rejected — recorded so they don't keep getting re-raised. If reopening one, note WHY the original decision is no longer valid.
+
+- **No email on `cameronhartman.dev`** (decided 2026-05-12). The null MX record (`0 .`) declares the domain refuses inbound email, which makes spoofing `@cameronhartman.dev` substantially harder. Cloudflare Email Routing would work fine alongside the GitHub Pages setup, but enabling it requires removing the null MX and that trade — anti-spoofing posture vs. having `info@`/`hello@`/etc. — isn't worth it for a personal CV. Do not propose vanity addresses on this domain without revisiting this decision.
+
+---
+
 ## 🟢 Plan 6 status — AI playground hardening shipped
 
 Shipped 2026-05-12 in PR [#48](https://github.com/CAM-eEng/CV/pull/48) (squash `5f89d72`). Closes the 11 actionable findings from the 2026-05-12 audit plus INFO #12:
