@@ -161,7 +161,7 @@ Each was explicitly out-of-scope or deferred during planning. Pick up if/when va
 
 ### Misc
 
-- [ ] **Set the `gh repo edit` description** for `CAM-eEng/CV` so the GitHub repo card reads cleanly: currently empty. Suggestion: "Online CV at cameronhartman.dev — built on Astro 5 + React 19 + BYOK AI features (Claude, OpenAI, OpenRouter)."
+- [x] **Set the `gh repo edit` description** for `CAM-eEng/CV` so the GitHub repo card reads cleanly. Set 2026-05-12 to: "Online CV at cameronhartman.dev — built on Astro 5 + React 19 + BYOK AI features (Claude, OpenAI, OpenRouter)."
 - [ ] Update `CAM-eEng/portfolio` repo description to point at the new site and archive it.
 
 ---
