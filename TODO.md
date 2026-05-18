@@ -90,7 +90,7 @@ Shipped 2026-05-12 across three PRs:
 
 ### Project case studies
 
-- [ ] Replace the placeholder body in `content/projects/leddisplay.mdx`. Headings are scaffolded (Problem / Approach / What I built / What I learned) — fill in real narrative. The LedDisplay auto-memory at `~/.claude/projects/-home-dexter/memory/project_leddisplay.md` has detailed technical context (1/16 vs 1/32 scan investigation, panel-compatibility findings, USB-C power constraints, two-step deploy workflow) — paste from there.
+- [ ] Replace the placeholder body in `content/projects/leddisplay.mdx`. Headings are scaffolded (Problem / Approach / What I built / What I learned) — fill in real narrative. The LedDisplay auto-memory at `~/.claude/projects/-home-dexter/memory/project_leddisplay.md` has detailed technical context (1/16 vs 1/32 scan investigation, panel-compatibility findings, USB-C power constraints, two-step deploy workflow) — but **verify before pasting**: that memory was written when the panel was being investigated as 128×64; Cameron's authoritative repo description (2026-05-18) says 64×64, so some claims in the memory file may no longer apply.
 - [ ] Decide whether the two historical academic projects (`Testing Interface for RF Amplifier` 2019, `Solar Microinverter` 2018) belong in `cv.yaml`. They were ported from the legacy resume.pdf. If you want them visible: add MDX case studies. If not: remove from `cv.yaml`.
 
 ### CV body
