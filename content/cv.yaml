@@ -155,7 +155,7 @@ skills:
 
 projects:
   - name: LedDisplay
-    description: CircuitPython matrix clock on Adafruit Matrix Portal S3 driving a 128×64 RGB LED matrix; full investigation of an undocumented HUB75 panel scan mode.
+    description: CircuitPython matrix clock on Adafruit Matrix Portal S3 driving a 64×64 RGB LED matrix; full investigation of an undocumented HUB75 panel scan mode.
     keywords:
       - CircuitPython
       - Adafruit Matrix Portal S3
