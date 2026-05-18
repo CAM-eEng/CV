@@ -1,35 +1,7 @@
 {
-  "generatedAt": "2026-05-11T22:07:46.658Z",
+  "generatedAt": "2026-05-18T01:39:25.504Z",
   "contributions": {
     "days": [
-      {
-        "date": "2025-05-11",
-        "count": 0
-      },
-      {
-        "date": "2025-05-12",
-        "count": 0
-      },
-      {
-        "date": "2025-05-13",
-        "count": 0
-      },
-      {
-        "date": "2025-05-14",
-        "count": 0
-      },
-      {
-        "date": "2025-05-15",
-        "count": 0
-      },
-      {
-        "date": "2025-05-16",
-        "count": 0
-      },
-      {
-        "date": "2025-05-17",
-        "count": 0
-      },
       {
         "date": "2025-05-18",
         "count": 0
@@ -1464,19 +1436,43 @@
       },
       {
         "date": "2026-05-11",
-        "count": 26
+        "count": 41
+      },
+      {
+        "date": "2026-05-12",
+        "count": 18
+      },
+      {
+        "date": "2026-05-13",
+        "count": 8
+      },
+      {
+        "date": "2026-05-14",
+        "count": 0
+      },
+      {
+        "date": "2026-05-15",
+        "count": 0
+      },
+      {
+        "date": "2026-05-16",
+        "count": 0
+      },
+      {
+        "date": "2026-05-17",
+        "count": 0
       }
     ],
-    "totalLastYear": 72
+    "totalLastYear": 113
   },
   "languages": [
     {
       "name": "TypeScript",
-      "bytes": 138518
+      "bytes": 192254
     },
     {
       "name": "Astro",
-      "bytes": 20428
+      "bytes": 21427
     },
     {
       "name": "Python",
@@ -1487,36 +1483,36 @@
       "bytes": 3247
     },
     {
+      "name": "CSS",
+      "bytes": 2716
+    },
+    {
       "name": "MDX",
-      "bytes": 535
+      "bytes": 545
     },
     {
       "name": "JavaScript",
       "bytes": 313
-    },
-    {
-      "name": "CSS",
-      "bytes": 219
     }
   ],
   "repos": [
     {
-      "name": "LedDisplay",
-      "description": null,
-      "url": "https://github.com/CAM-eEng/LedDisplay",
-      "stars": 0,
-      "forks": 0,
-      "lastPushedAt": "2026-05-11T21:57:46Z",
-      "primaryLanguage": "Python"
-    },
-    {
       "name": "CV",
-      "description": "Online CV / online resume — successor to CAM-eEng/portfolio, hosted at cameronhartman.dev",
+      "description": "Online CV at cameronhartman.dev — built on Astro 5 + React 19 + BYOK AI features (Claude, OpenAI, OpenRouter).",
       "url": "https://github.com/CAM-eEng/CV",
       "stars": 0,
       "forks": 0,
-      "lastPushedAt": "2026-05-11T21:56:44Z",
+      "lastPushedAt": "2026-05-18T01:20:45Z",
       "primaryLanguage": "TypeScript"
+    },
+    {
+      "name": "LedDisplay",
+      "description": "CircuitPython matrix clock on Adafruit Matrix Portal S3 driving a 64×64 RGB LED matrix; full investigation of an undocumented HUB75 panel scan mode.",
+      "url": "https://github.com/CAM-eEng/LedDisplay",
+      "stars": 0,
+      "forks": 0,
+      "lastPushedAt": "2026-05-13T23:25:09Z",
+      "primaryLanguage": "Python"
     }
   ],
   "htb": {
