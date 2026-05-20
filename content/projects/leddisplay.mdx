@@ -17,10 +17,43 @@ summary: 'A clock running on a Matrix Portal S3 driving a 64×64 RGB LED matrix,
 
 ## Problem
 
-(Placeholder body — replace with real case study.)
+I wanted a way to passively signal when I'm in a meeting — so people don't
+interrupt — and have it double as a nice-looking clock the rest of the time.
 
 ## Approach
 
+Build it on an Adafruit Matrix Portal S3 — a microcontroller purpose-built for
+driving HUB75 RGB LED panels and well-supported by Adafruit's own panel
+lineup. Start with a single panel to get the core clock working, then scale up
+to two, three, or four panels depending on how much information I want on the
+display at once.
+
 ## What I built
 
+A highly customizable digital clock that shows time, date, and weather, with
+room to overlay dynamic information on top — for example an incoming-call
+indicator, an "in a meeting" message, or the currently playing Spotify track.
+
+## The scan-mode investigation
+
+Driving the panel at its full unique resolution didn't work out of the box.
+Across every standard `adafruit_matrixportal.matrix.Matrix` configuration —
+varying `tile_rows`, `serpentine`, and `alt_addr_pins` — the library
+duplicated half the framebuffer onto the other half.
+
+The HUB75 connector silkscreen showed why: GND where the **E** address pin
+would be, so the panel is 1/16 scan. Only the A/B/C/D address lines are
+wired, which can directly address 32 rows; the rest must be reached via a
+panel-internal mechanism not exposed on HUB75. And the board has no driver-
+chip markings to look up.
+
+Three viable paths forward: design for the smaller effective resolution,
+switch to a Raspberry Pi + Adafruit RGB Matrix Bonnet with hzeller's
+`rpi-rgb-led-matrix` (which exposes `--led-multiplexing`, `--led-row-addr-type`,
+and `--led-panel-type` for exactly this case), or swap in a panel with a
+wired E line.
+
 ## What I learned
+
+- How to go fully hands-off when vibe-coding a project end-to-end.
+- How LED matrix panels actually work — and just how hungry they are for power.
