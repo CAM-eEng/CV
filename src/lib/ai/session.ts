@@ -1,6 +1,7 @@
 import type { ProviderId } from './provider';
 
 const KEY = 'byok-session';
+// Keep in sync with ProviderId in ./provider.ts
 const VALID_PROVIDER_IDS: readonly ProviderId[] = ['openrouter', 'anthropic', 'openai'];
 
 export interface Session {
