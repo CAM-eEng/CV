@@ -27,6 +27,7 @@ export function ConnectBar() {
   return (
     <>
       {hasSession ? (
+        // key={tick} forces re-mount on session change — ProviderStatus only reads sessionStorage on mount
         <ProviderStatus key={tick} onChange={() => setHasSession(false)} />
       ) : (
         <button
