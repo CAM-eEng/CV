@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { KeyPasteForm } from './KeyPasteForm';
-import { writeSession } from '~/lib/ai/session';
 import {
   generateVerifier,
   challengeFromVerifier,
@@ -40,11 +39,6 @@ export function ConnectSheet({ open, onClose, onConnected }: Props) {
       state,
     });
     window.location.href = url;
-  }
-
-  function startDemo() {
-    writeSession({ providerId: 'demo', token: '', model: 'demo' });
-    onConnected();
   }
 
   return (
@@ -90,15 +84,6 @@ export function ConnectSheet({ open, onClose, onConnected }: Props) {
               <div className="font-medium">Use an OpenAI key</div>
               <div className="text-xs text-neutral-500">
                 Paste your own. Key stays in your browser.
-              </div>
-            </button>
-            <button
-              onClick={startDemo}
-              className="w-full text-left px-4 py-3 rounded border border-dashed border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-            >
-              <div className="font-medium">Try demo mode</div>
-              <div className="text-xs text-neutral-500">
-                No key, no calls — pre-baked answers about Cameron.
               </div>
             </button>
           </div>

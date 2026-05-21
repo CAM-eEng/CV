@@ -15,7 +15,7 @@ describe('BYOK session storage', () => {
   });
 
   it('clear removes the session', () => {
-    writeSession({ providerId: 'demo', token: '', model: 'demo' });
+    writeSession({ providerId: 'anthropic', token: 'sk-ant-x', model: 'claude-opus-4-7' });
     clearSession();
     expect(readSession()).toBeNull();
   });
@@ -27,6 +27,16 @@ describe('BYOK session storage', () => {
 
   it('returns null on corrupted JSON', () => {
     sessionStorage.setItem('byok-session', '{not valid json');
+    expect(readSession()).toBeNull();
+  });
+
+  it('returns null when sessionStorage holds an unknown providerId', () => {
+    // Simulates a stale session payload from a removed provider — e.g. a returning
+    // visitor whose browser still has data from before a provider was retired.
+    sessionStorage.setItem(
+      'byok-session',
+      JSON.stringify({ providerId: 'xyz', token: 'irrelevant', model: 'irrelevant' }),
+    );
     expect(readSession()).toBeNull();
   });
 });

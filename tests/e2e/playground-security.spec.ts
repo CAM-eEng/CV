@@ -31,7 +31,11 @@ test.describe('Playground security', () => {
       sessionStorage.setItem('cv.chat.count', '50');
       sessionStorage.setItem(
         'byok-session',
-        JSON.stringify({ providerId: 'demo', token: 'x', model: 'demo-default' }),
+        JSON.stringify({
+          providerId: 'openrouter',
+          token: 'fake-test-token',
+          model: 'google/gemini-2.0-flash-exp:free',
+        }),
       );
     });
     await page.goto('/playground/');

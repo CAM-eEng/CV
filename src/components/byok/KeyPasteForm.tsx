@@ -58,8 +58,8 @@ export function KeyPasteForm({ providerId, defaultModel, onConnected }: Props) {
       </label>
       <p className="text-xs text-neutral-500">
         Key stored in <code>sessionStorage</code> only — vanishes when you close the tab. Browser
-        extensions and compromised tabs can still read it. Use demo mode if you don't trust this
-        session.
+        extensions and compromised tabs can still read it. If you don't trust this session, don't
+        paste a key.
       </p>
       {err && <p className="text-xs text-red-600">{err}</p>}
       <button

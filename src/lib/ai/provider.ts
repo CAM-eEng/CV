@@ -1,4 +1,4 @@
-export type ProviderId = 'openrouter' | 'anthropic' | 'openai' | 'demo';
+export type ProviderId = 'openrouter' | 'anthropic' | 'openai';
 
 export interface ModelInfo {
   id: string; // provider-native model id, e.g. 'claude-opus-4-7'

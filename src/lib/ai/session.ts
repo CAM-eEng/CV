@@ -1,6 +1,8 @@
 import type { ProviderId } from './provider';
 
 const KEY = 'byok-session';
+// Keep in sync with ProviderId in ./provider.ts
+const VALID_PROVIDER_IDS: readonly ProviderId[] = ['openrouter', 'anthropic', 'openai'];
 
 export interface Session {
   providerId: ProviderId;
@@ -15,6 +17,7 @@ export function readSession(): Session | null {
   try {
     const parsed = JSON.parse(raw) as Session;
     if (!parsed.providerId || typeof parsed.token !== 'string' || !parsed.model) return null;
+    if (!VALID_PROVIDER_IDS.includes(parsed.providerId)) return null;
     return parsed;
   } catch {
     return null;
