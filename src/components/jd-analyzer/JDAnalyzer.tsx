@@ -22,6 +22,7 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
   const [err, setErr] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<boolean>(false);
   const [hasSession, setHasSession] = useState<boolean>(false);
+  const [pendingAnalyze, setPendingAnalyze] = useState<boolean>(false);
 
   useEffect(() => {
     const refresh = () => setAccepted(hasAcceptedTerms());
@@ -37,11 +38,22 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
     return () => window.removeEventListener(SESSION_CHANGED_EVENT, refresh);
   }, []);
 
+  // Auto-retry analyze after a fresh connect when the user previously hit Analyze
+  // without a session. Fires only on hasSession/pendingAnalyze transitions; the
+  // closure captures the latest analyze at re-render time.
+  useEffect(() => {
+    if (pendingAnalyze && hasSession) {
+      setPendingAnalyze(false);
+      void analyze();
+    }
+  }, [hasSession, pendingAnalyze]);
+
   const systemPrompt = buildSystemPrompt(cv);
 
   async function analyze() {
     if (!jd.trim()) return;
     if (!hasSession) {
+      setPendingAnalyze(true);
       window.dispatchEvent(new CustomEvent(REQUEST_CONNECT_EVENT));
       return;
     }
@@ -105,7 +117,11 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
       <div className="space-y-1">
         <textarea
           value={jd}
-          onChange={(e) => setJd(e.target.value)}
+          onChange={(e) => {
+            setJd(e.target.value);
+            // User is editing — cancel any staged auto-analyze from a prior click
+            if (pendingAnalyze) setPendingAnalyze(false);
+          }}
           maxLength={MAX_TEXT_INPUT_CHARS}
           placeholder="Paste a job description here…"
           rows={6}
