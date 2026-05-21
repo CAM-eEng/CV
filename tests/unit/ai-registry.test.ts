@@ -1,17 +1,28 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { writeSession, clearSession } from '~/lib/ai/session';
-import { DemoProvider } from '~/lib/ai/demo';
 import { AnthropicProvider } from '~/lib/ai/anthropic';
 import { OpenAIProvider } from '~/lib/ai/openai';
 import { OpenRouterProvider } from '~/lib/ai/openrouter';
 
 describe('getActiveProvider', () => {
-  beforeEach(() => clearSession());
+  beforeEach(() => {
+    clearSession();
+    sessionStorage.clear();
+  });
 
-  it('returns DemoProvider when no session is set', () => {
-    const p = getActiveProvider('');
-    expect(p).toBeInstanceOf(DemoProvider);
+  it('throws when no session is set', () => {
+    expect(() => getActiveProvider('')).toThrow(/No active provider session/);
+  });
+
+  it('throws when sessionStorage holds an unknown providerId', () => {
+    // Simulates a stale session — readSession() silently rejects it, so
+    // getActiveProvider sees no session and throws via the no-session path.
+    sessionStorage.setItem(
+      'byok-session',
+      JSON.stringify({ providerId: 'xyz', token: 'x', model: 'y' }),
+    );
+    expect(() => getActiveProvider('')).toThrow(/No active provider session/);
   });
 
   it('returns AnthropicProvider for an anthropic session', () => {

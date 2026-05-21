@@ -15,7 +15,7 @@ describe('BYOK session storage', () => {
   });
 
   it('clear removes the session', () => {
-    writeSession({ providerId: 'demo', token: '', model: 'demo' });
+    writeSession({ providerId: 'anthropic', token: 'sk-ant-x', model: 'claude-opus-4-7' });
     clearSession();
     expect(readSession()).toBeNull();
   });
