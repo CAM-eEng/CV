@@ -19,9 +19,7 @@ export function ProviderStatus({ onChange }: Props) {
       ? 'Anthropic'
       : session.providerId === 'openai'
         ? 'OpenAI'
-        : session.providerId === 'openrouter'
-          ? 'OpenRouter'
-          : 'Demo';
+        : 'OpenRouter';
 
   return (
     <div className="flex items-center gap-2 text-xs text-neutral-500">

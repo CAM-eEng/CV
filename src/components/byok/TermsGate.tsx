@@ -47,7 +47,7 @@ export function TermsGate() {
             </li>
             <li>
               <strong>You bring the key.</strong> Inference is performed by your connected provider
-              (OpenRouter, Anthropic, OpenAI, or local demo mode). This site does not proxy, log, or
+              (OpenRouter, Anthropic, OpenAI). This site does not proxy, log, or
               store your queries, responses, or API credentials. Costs are billed to you by your
               provider.
             </li>
