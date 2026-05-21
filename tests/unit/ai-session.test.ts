@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { readSession, writeSession, clearSession, type Session } from '~/lib/ai/session';
 
 describe('BYOK session storage', () => {
@@ -38,5 +38,22 @@ describe('BYOK session storage', () => {
       JSON.stringify({ providerId: 'xyz', token: 'irrelevant', model: 'irrelevant' }),
     );
     expect(readSession()).toBeNull();
+  });
+
+  it('writeSession dispatches cv:session-changed', () => {
+    const spy = vi.fn();
+    window.addEventListener('cv:session-changed', spy);
+    writeSession({ providerId: 'anthropic', token: 'sk-ant-x', model: 'claude-opus-4-7' });
+    expect(spy).toHaveBeenCalledTimes(1);
+    window.removeEventListener('cv:session-changed', spy);
+  });
+
+  it('clearSession dispatches cv:session-changed', () => {
+    writeSession({ providerId: 'anthropic', token: 'sk-ant-x', model: 'claude-opus-4-7' });
+    const spy = vi.fn();
+    window.addEventListener('cv:session-changed', spy);
+    clearSession();
+    expect(spy).toHaveBeenCalledTimes(1);
+    window.removeEventListener('cv:session-changed', spy);
   });
 });

@@ -1,6 +1,8 @@
 import type { ProviderId } from './provider';
 
 const KEY = 'byok-session';
+const SESSION_CHANGED_EVENT = 'cv:session-changed';
+const REQUEST_CONNECT_EVENT = 'cv:request-connect';
 // Keep in sync with ProviderId in ./provider.ts
 const VALID_PROVIDER_IDS: readonly ProviderId[] = ['openrouter', 'anthropic', 'openai'];
 
@@ -27,9 +29,13 @@ export function readSession(): Session | null {
 export function writeSession(session: Session): void {
   if (typeof sessionStorage === 'undefined') return;
   sessionStorage.setItem(KEY, JSON.stringify(session));
+  window.dispatchEvent(new CustomEvent(SESSION_CHANGED_EVENT));
 }
 
 export function clearSession(): void {
   if (typeof sessionStorage === 'undefined') return;
   sessionStorage.removeItem(KEY);
+  window.dispatchEvent(new CustomEvent(SESSION_CHANGED_EVENT));
 }
+
+export { SESSION_CHANGED_EVENT, REQUEST_CONNECT_EVENT };
