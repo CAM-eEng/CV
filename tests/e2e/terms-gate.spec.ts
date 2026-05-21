@@ -29,7 +29,7 @@ test.describe('AI terms gate on /playground', () => {
 
     // Dialog dismissed; chat is now reachable.
     await expect(dialog).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /Connect to ask/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Connect/i })).toBeVisible();
   });
 
   test('acceptance persists for the tab session', async ({ page }) => {
@@ -42,6 +42,6 @@ test.describe('AI terms gate on /playground', () => {
     await page.goto('/');
     await page.goto('/playground');
     await expect(page.getByRole('dialog', { name: /Terms/i })).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /Connect to ask/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Connect/i })).toBeVisible();
   });
 });

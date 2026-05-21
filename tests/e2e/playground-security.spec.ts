@@ -49,8 +49,7 @@ test.describe('Playground security', () => {
     await page.addInitScript(() => sessionStorage.setItem('ai-terms-accepted-v1', 'yes'));
     await page.goto('/playground/');
     await page
-      .getByText(/Connect to ask|Change provider/i)
-      .first()
+      .getByRole('button', { name: /^Connect/i })
       .click();
     const anthropicBtn = page.getByRole('button', { name: /anthropic/i }).first();
     if (await anthropicBtn.isVisible()) await anthropicBtn.click();
