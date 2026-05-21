@@ -2,11 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Message } from './Message';
 import { InputBox } from './InputBox';
 import { CacheStat } from './CacheStat';
-import { ConnectSheet } from '~/components/byok/ConnectSheet';
-import { ProviderStatus } from '~/components/byok/ProviderStatus';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
-import { readSession } from '~/lib/ai/session';
+import { readSession, SESSION_CHANGED_EVENT, REQUEST_CONNECT_EVENT } from '~/lib/ai/session';
 import { hasAcceptedTerms, TERMS_CHANGED_EVENT } from '~/lib/ai/terms';
 import {
   MAX_CHAT_MESSAGES_PER_SESSION,
@@ -28,9 +26,8 @@ export function Chat({ cv }: Props) {
   const [pendingAssistant, setPendingAssistant] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [cachedTokens, setCachedTokens] = useState(0);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [connectedTick, setConnectedTick] = useState(0);
   const [accepted, setAccepted] = useState<boolean>(false);
+  const [hasSession, setHasSession] = useState<boolean>(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -41,15 +38,17 @@ export function Chat({ cv }: Props) {
   }, []);
 
   useEffect(() => {
-    /* connectedTick re-render trigger */
-  }, [connectedTick]);
+    const refresh = () => setHasSession(readSession() !== null);
+    refresh();
+    window.addEventListener(SESSION_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(SESSION_CHANGED_EVENT, refresh);
+  }, []);
 
-  const hasSession = readSession() !== null;
   const systemPrompt = buildSystemPrompt(cv);
 
   async function handleSubmit(text: string) {
     if (!hasSession) {
-      setSheetOpen(true);
+      window.dispatchEvent(new CustomEvent(REQUEST_CONNECT_EVENT));
       return;
     }
     if (chatLimitReached()) {
@@ -109,19 +108,7 @@ export function Chat({ cv }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-sm uppercase tracking-wider text-neutral-500">Chat with my CV</h2>
-        {hasSession ? (
-          <ProviderStatus onChange={() => setConnectedTick((t) => t + 1)} />
-        ) : (
-          <button
-            onClick={() => setSheetOpen(true)}
-            className="text-xs underline underline-offset-4 text-neutral-600 dark:text-neutral-400"
-          >
-            Connect to ask
-          </button>
-        )}
-      </div>
+      <h2 className="text-sm uppercase tracking-wider text-neutral-500">Chat with my CV</h2>
 
       <div className="space-y-3 min-h-[8rem]">
         {messages.map((m, i) => (
@@ -149,15 +136,6 @@ export function Chat({ cv }: Props) {
           <span className="text-neutral-500">{busy ? 'thinking…' : ''}</span>
         </div>
       </div>
-
-      <ConnectSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        onConnected={() => {
-          setSheetOpen(false);
-          setConnectedTick((t) => t + 1);
-        }}
-      />
     </div>
   );
 }
