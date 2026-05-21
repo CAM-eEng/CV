@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ResultCard } from './ResultCard';
-import { ConnectSheet } from '~/components/byok/ConnectSheet';
 import { getActiveProvider } from '~/lib/ai/registry';
 import { buildSystemPrompt } from '~/lib/ai/system-prompt';
-import { readSession } from '~/lib/ai/session';
+import { readSession, SESSION_CHANGED_EVENT, REQUEST_CONNECT_EVENT } from '~/lib/ai/session';
 import { JDFitSchema, type JDFit, buildJDPromptBody } from '~/lib/ai/jd-schema';
 import { hasAcceptedTerms, TERMS_CHANGED_EVENT } from '~/lib/ai/terms';
 import {
@@ -21,8 +20,8 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
   const [busy, setBusy] = useState(false);
   const [fit, setFit] = useState<JDFit | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [accepted, setAccepted] = useState<boolean>(false);
+  const [hasSession, setHasSession] = useState<boolean>(false);
 
   useEffect(() => {
     const refresh = () => setAccepted(hasAcceptedTerms());
@@ -31,12 +30,19 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
     return () => window.removeEventListener(TERMS_CHANGED_EVENT, refresh);
   }, []);
 
+  useEffect(() => {
+    const refresh = () => setHasSession(readSession() !== null);
+    refresh();
+    window.addEventListener(SESSION_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(SESSION_CHANGED_EVENT, refresh);
+  }, []);
+
   const systemPrompt = buildSystemPrompt(cv);
 
   async function analyze() {
     if (!jd.trim()) return;
-    if (!readSession()) {
-      setSheetOpen(true);
+    if (!hasSession) {
+      window.dispatchEvent(new CustomEvent(REQUEST_CONNECT_EVENT));
       return;
     }
     if (jdLimitReached()) {
@@ -53,7 +59,6 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
       const provider = getActiveProvider(systemPrompt);
       const body = buildJDPromptBody(jd, cv.basics.summary);
       const result = await provider.structured({ prompt: body, schema: JDFitSchema });
-      // Apply moderation to user-visible string fields.
       const moderated: JDFit = {
         ...result,
         tailored_intro: filter(result.tailored_intro).sanitized,
@@ -61,7 +66,7 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
         suggested_questions: result.suggested_questions.map((q) => filter(q).sanitized),
         matched_skills: result.matched_skills.map((m) => ({
           skill: filter(m.skill).sanitized,
-          evidence: m.evidence, // evidence is a citation key, safe by schema
+          evidence: m.evidence,
         })),
       };
       setFit(moderated);
@@ -119,14 +124,6 @@ export function JDAnalyzer({ cv }: { cv: CV }) {
       </button>
       {err && <p className="text-xs text-red-600">{err}</p>}
       {fit && <ResultCard fit={fit} />}
-      <ConnectSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        onConnected={() => {
-          setSheetOpen(false);
-          analyze();
-        }}
-      />
     </div>
   );
 }
