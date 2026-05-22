@@ -129,7 +129,7 @@ The CSP lives in `src/layouts/Base.astro` (or wherever the meta tag ends up). Th
 - Wait until `cameronhartman.dev` is live and stable.
 - It's currently private and Pages is disabled — there's no live site to break.
 - Archive (don't delete) — preserves git history, prevents new commits, signals "moved".
-- Update the GitHub profile README and LinkedIn link to the new domain *before* archiving.
+- Update the GitHub profile README to the new domain *before* archiving.
 
 ## Things that look like bugs but aren't
 
