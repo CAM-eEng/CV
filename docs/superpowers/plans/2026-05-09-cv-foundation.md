@@ -738,7 +738,7 @@ export async function loadCV(path: string): Promise<CV> {
 basics:
   name: Cameron Hartman
   label: Firmware / Embedded Engineer
-  email: cameron.hartman081@gmail.com
+  email: ledge.valley8269@eagereverest.com
   url: https://cameronhartman.dev
   summary: |
     Firmware and embedded systems engineer with experience across CircuitPython,
@@ -751,9 +751,6 @@ basics:
     - network: GitHub
       username: CAM-eEng
       url: https://github.com/CAM-eEng
-    - network: LinkedIn
-      username: cameronhartman
-      url: https://www.linkedin.com/in/cameronhartman/
 
 work:
   - name: Litepoint
@@ -1581,7 +1578,7 @@ import Base from '~/layouts/Base.astro';
 
     <h2>Reporting</h2>
     <p>
-      Found something? Email <a href="mailto:cameron.hartman081@gmail.com">cameron.hartman081@gmail.com</a>
+      Found something? Email <a href="mailto:ledge.valley8269@eagereverest.com">ledge.valley8269@eagereverest.com</a>
       or open an issue on the public repo.
     </p>
   </article>
