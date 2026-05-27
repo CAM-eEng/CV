@@ -1,5 +1,17 @@
 import type { Activity } from '~/lib/activity/schema';
 
+export function formatTooltip(isoDate: string, count: number): string {
+  const d = new Date(isoDate + 'T00:00:00Z');
+  const dateStr = d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+  const plural = count === 1 ? 'contribution' : 'contributions';
+  return `${dateStr} · ${count} ${plural}`;
+}
+
 interface Props {
   days: Activity['contributions']['days'];
 }
