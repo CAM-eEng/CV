@@ -1,6 +1,10 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import { formatTooltip, computeMonthLabels } from '~/components/activity/ContributionHeatmap';
+import { render, cleanup } from '@testing-library/react';
+import {
+  formatTooltip,
+  computeMonthLabels,
+  ContributionHeatmap,
+} from '~/components/activity/ContributionHeatmap';
 
 afterEach(() => {
   cleanup();
@@ -82,5 +86,36 @@ describe('computeMonthLabels', () => {
     const start = new Date('2026-03-01T00:00:00Z');
     const labels = computeMonthLabels(start, 4);
     expect(labels[0]).toEqual({ x: 0, label: 'Mar' });
+  });
+});
+
+function makeDays(n: number): Array<{ date: string; count: number }> {
+  const days: Array<{ date: string; count: number }> = [];
+  const today = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(today.getUTCDate() - i);
+    days.push({ date: d.toISOString().slice(0, 10), count: i % 5 });
+  }
+  return days;
+}
+
+describe('<ContributionHeatmap /> month labels', () => {
+  it('renders at least two distinct month abbreviations above the grid', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(120)} />);
+    const texts = Array.from(container.querySelectorAll('svg text')).map((t) => t.textContent);
+    const months = new Set(
+      texts.filter((t) => t && /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/.test(t)),
+    );
+    expect(months.size).toBeGreaterThanOrEqual(2);
+  });
+
+  it('reserves vertical space for labels in the viewBox', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(7)} />);
+    const svg = container.querySelector('svg')!;
+    const viewBox = svg.getAttribute('viewBox')!;
+    const [, , , h] = viewBox.split(' ').map(Number);
+    // 7 rows * (11 + 3) = 98 for cells alone; labels add LABEL_H = 14.
+    expect(h).toBe(7 * (11 + 3) + 14);
   });
 });

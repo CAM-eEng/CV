@@ -80,6 +80,8 @@ const BUCKET_FILL = [
   'fill-green-600 dark:fill-green-400',
 ];
 
+const LABEL_H = 14;
+
 export function ContributionHeatmap({ days }: Props) {
   const byDate = new Map(days.map((d) => [d.date, d.count]));
   const max = Math.max(1, ...days.map((d) => d.count));
@@ -89,6 +91,8 @@ export function ContributionHeatmap({ days }: Props) {
   end.setDate(end.getDate() + (6 - end.getDay()));
   const start = new Date(end);
   start.setDate(end.getDate() - WEEKS * 7 + 1);
+
+  const monthLabels = computeMonthLabels(start, WEEKS);
 
   const cells: Array<{ x: number; y: number; count: number; date: string }> = [];
   for (let w = 0; w < WEEKS; w++) {
@@ -103,24 +107,36 @@ export function ContributionHeatmap({ days }: Props) {
   return (
     <div className="overflow-x-auto">
       <svg
-        viewBox={`0 0 ${WEEKS * (CELL + GAP)} ${ROWS * (CELL + GAP)}`}
+        viewBox={`0 0 ${WEEKS * (CELL + GAP)} ${ROWS * (CELL + GAP) + LABEL_H}`}
         role="img"
         aria-label="GitHub contributions over the last year"
         className="w-full"
       >
-        {cells.map((c) => (
-          <rect
-            key={c.date}
-            x={c.x}
-            y={c.y}
-            width={CELL}
-            height={CELL}
-            rx={2}
-            className={BUCKET_FILL[bucket(c.count, max)]}
+        {monthLabels.map((l) => (
+          <text
+            key={`${l.x}-${l.label}`}
+            x={l.x}
+            y={LABEL_H - 4}
+            className="fill-neutral-500 text-[9px] font-medium"
           >
-            <title>{`${c.date}: ${c.count} contributions`}</title>
-          </rect>
+            {l.label}
+          </text>
         ))}
+        <g transform={`translate(0, ${LABEL_H})`}>
+          {cells.map((c) => (
+            <rect
+              key={c.date}
+              x={c.x}
+              y={c.y}
+              width={CELL}
+              height={CELL}
+              rx={2}
+              className={BUCKET_FILL[bucket(c.count, max)]}
+            >
+              <title>{`${c.date}: ${c.count} contributions`}</title>
+            </rect>
+          ))}
+        </g>
       </svg>
     </div>
   );
