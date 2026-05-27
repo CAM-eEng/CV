@@ -12,6 +12,15 @@ export function formatTooltip(isoDate: string, count: number): string {
   return `${dateStr} · ${count} ${plural}`;
 }
 
+const MONTH_NAMES = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
+];
+
+export interface MonthLabel {
+  x: number;
+  label: string;
+}
+
 interface Props {
   days: Activity['contributions']['days'];
 }
@@ -20,6 +29,28 @@ const CELL = 11;
 const GAP = 3;
 const ROWS = 7;
 const WEEKS = 53;
+
+export function computeMonthLabels(start: Date, weeks: number): MonthLabel[] {
+  const labels: MonthLabel[] = [];
+  let lastMonth = -1;
+  for (let w = 0; w < weeks; w++) {
+    const cur = new Date(start);
+    cur.setUTCDate(start.getUTCDate() + w * 7);
+    const m = cur.getUTCMonth();
+    if (m !== lastMonth) {
+      // Skip the column-0 label if its Sunday is late in its month — the next
+      // column will own the new-month label and the leftover days from the
+      // prior month are visually a partial week.
+      if (w === 0 && cur.getUTCDate() > 7) {
+        lastMonth = m;
+        continue;
+      }
+      labels.push({ x: w * (CELL + GAP), label: MONTH_NAMES[m] });
+      lastMonth = m;
+    }
+  }
+  return labels;
+}
 
 function bucket(count: number, max: number): 0 | 1 | 2 | 3 | 4 {
   if (count === 0) return 0;

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { formatTooltip } from '~/components/activity/ContributionHeatmap';
+import { formatTooltip, computeMonthLabels } from '~/components/activity/ContributionHeatmap';
 
 afterEach(() => {
   cleanup();
@@ -24,5 +24,52 @@ describe('formatTooltip', () => {
     // for a "2026-05-27" cell because `new Date('2026-05-27')` parses as
     // UTC midnight and would then be localized backward.
     expect(formatTooltip('2026-05-27', 1)).toMatch(/^May 27, 2026/);
+  });
+});
+
+describe('computeMonthLabels', () => {
+  it('emits one label per month, anchored at the column where the month begins', () => {
+    // 53 weeks ending on Saturday 2026-05-30 (so start = 2025-05-25, a Sunday).
+    // The grid spans late May 2025 → late May 2026.
+    const end = new Date('2026-05-30T00:00:00Z');
+    const start = new Date('2025-05-25T00:00:00Z');
+    const labels = computeMonthLabels(start, 53);
+
+    // First column: Sunday 2025-05-25 → that week contains May 25-31, so the
+    // Sunday is in May but the rest is partly in June. computeMonthLabels
+    // anchors on the Sunday, so column 0 is "May", and the next label is "Jun".
+    // We expect roughly 12 labels for a 53-week span.
+    expect(labels.length).toBeGreaterThanOrEqual(11);
+    expect(labels.length).toBeLessThanOrEqual(13);
+
+    const names = labels.map((l) => l.label);
+    // All 12 distinct month names should appear at least once across a year.
+    for (const m of ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']) {
+      expect(names).toContain(m);
+    }
+
+    // Labels are in column order (x strictly increasing).
+    for (let i = 1; i < labels.length; i++) {
+      expect(labels[i].x).toBeGreaterThan(labels[i - 1].x);
+    }
+  });
+
+  it('skips a column-0 label when its week falls mostly in the previous month', () => {
+    // Start on Sunday 2025-05-25 — the week is mostly May (25-31), with the
+    // first June day landing on the next column. We want "May" labelled on
+    // column 0 (Sunday is May 25 → month is May, date is 25 > 7 means the
+    // Sunday is late in its month; skip the label, let June take its column).
+    const start = new Date('2025-05-25T00:00:00Z');
+    const labels = computeMonthLabels(start, 6);
+    // First label should be "Jun" at x > 0, NOT "May" at x = 0.
+    expect(labels[0].label).toBe('Jun');
+    expect(labels[0].x).toBeGreaterThan(0);
+  });
+
+  it('emits a column-0 label when its Sunday is early in the month', () => {
+    // Sunday 2026-03-01 — clearly the start of March; label belongs on col 0.
+    const start = new Date('2026-03-01T00:00:00Z');
+    const labels = computeMonthLabels(start, 4);
+    expect(labels[0]).toEqual({ x: 0, label: 'Mar' });
   });
 });
