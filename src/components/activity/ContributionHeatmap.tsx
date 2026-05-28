@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { Activity } from '~/lib/activity/schema';
 
 export function formatTooltip(isoDate: string, count: number): string {
@@ -104,10 +105,33 @@ export function ContributionHeatmap({ days }: Props) {
     }
   }
 
+  const [hovered, setHovered] = useState<{
+    x: number;
+    y: number;
+    date: string;
+    count: number;
+  } | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hovered) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setHovered(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [hovered]);
+
+  const svgVbWidth = WEEKS * (CELL + GAP);
+  const tooltipLeftPct =
+    hovered === null ? 0 : Math.min(Math.max(((hovered.x + CELL / 2) / svgVbWidth) * 100, 8), 92);
+  const tooltipTopPx =
+    hovered === null ? 0 : ((hovered.y + LABEL_H) / (ROWS * (CELL + GAP) + LABEL_H)) * 100;
+
   return (
-    <div className="overflow-x-auto">
+    <div ref={wrapperRef} className="relative overflow-x-auto">
       <svg
-        viewBox={`0 0 ${WEEKS * (CELL + GAP)} ${ROWS * (CELL + GAP) + LABEL_H}`}
+        viewBox={`0 0 ${svgVbWidth} ${ROWS * (CELL + GAP) + LABEL_H}`}
         role="img"
         aria-label="GitHub contributions over the last year"
         className="w-full"
@@ -131,13 +155,30 @@ export function ContributionHeatmap({ days }: Props) {
               width={CELL}
               height={CELL}
               rx={2}
-              className={BUCKET_FILL[bucket(c.count, max)]}
+              tabIndex={0}
+              className={`${BUCKET_FILL[bucket(c.count, max)]} focus:outline-none focus:stroke-neutral-700 dark:focus:stroke-neutral-300`}
+              onMouseEnter={() => setHovered({ x: c.x, y: c.y, date: c.date, count: c.count })}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setHovered({ x: c.x, y: c.y, date: c.date, count: c.count })}
+              onBlur={() => setHovered(null)}
             >
               <title>{`${c.date}: ${c.count} contributions`}</title>
             </rect>
           ))}
         </g>
       </svg>
+      {hovered && (
+        <div
+          role="tooltip"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-neutral-100 shadow-md dark:bg-neutral-100 dark:text-neutral-900"
+          style={{
+            left: `${tooltipLeftPct}%`,
+            top: `${tooltipTopPx}%`,
+          }}
+        >
+          {formatTooltip(hovered.date, hovered.count)}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, fireEvent, screen } from '@testing-library/react';
 import {
   formatTooltip,
   computeMonthLabels,
@@ -99,6 +99,53 @@ function makeDays(n: number): Array<{ date: string; count: number }> {
   }
   return days;
 }
+
+describe('<ContributionHeatmap /> tooltip', () => {
+  it('shows a styled tooltip on cell hover', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(30)} />);
+    const rect = container.querySelector('rect[tabindex="0"]')!;
+    fireEvent.mouseEnter(rect);
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).toBeInTheDocument();
+    expect(tooltip.textContent).toMatch(/[A-Z][a-z]+ \d+, \d{4} · \d+ contributions?/);
+  });
+
+  it('hides the tooltip on mouse leave', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(30)} />);
+    const rect = container.querySelector('rect[tabindex="0"]')!;
+    fireEvent.mouseEnter(rect);
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    fireEvent.mouseLeave(rect);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the tooltip on cell focus', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(30)} />);
+    const rect = container.querySelector('rect[tabindex="0"]')!;
+    fireEvent.focus(rect);
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+  });
+
+  it('dismisses the tooltip on Escape', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(30)} />);
+    const rect = container.querySelector('rect[tabindex="0"]')!;
+    fireEvent.focus(rect);
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('preserves the <title> element on every cell for screen readers', () => {
+    const { container } = render(<ContributionHeatmap days={makeDays(30)} />);
+    const rects = container.querySelectorAll('rect[tabindex="0"]');
+    expect(rects.length).toBeGreaterThan(0);
+    for (const r of rects) {
+      const title = r.querySelector('title');
+      expect(title).not.toBeNull();
+      expect(title!.textContent).toMatch(/^\d{4}-\d{2}-\d{2}: \d+ contributions$/);
+    }
+  });
+});
 
 describe('<ContributionHeatmap /> month labels', () => {
   it('renders at least two distinct month abbreviations above the grid', () => {
