@@ -1,4 +1,37 @@
+import { useEffect, useState } from 'react';
 import type { Activity } from '~/lib/activity/schema';
+
+export function formatTooltip(isoDate: string, count: number): string {
+  const d = new Date(isoDate + 'T00:00:00Z');
+  const dateStr = d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+  const plural = count === 1 ? 'contribution' : 'contributions';
+  return `${dateStr} · ${count} ${plural}`;
+}
+
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+export interface MonthLabel {
+  x: number;
+  label: string;
+}
 
 interface Props {
   days: Activity['contributions']['days'];
@@ -8,6 +41,28 @@ const CELL = 11;
 const GAP = 3;
 const ROWS = 7;
 const WEEKS = 53;
+
+export function computeMonthLabels(start: Date, weeks: number): MonthLabel[] {
+  const labels: MonthLabel[] = [];
+  let lastMonth = -1;
+  for (let w = 0; w < weeks; w++) {
+    const cur = new Date(start);
+    cur.setUTCDate(start.getUTCDate() + w * 7);
+    const m = cur.getUTCMonth();
+    if (m !== lastMonth) {
+      // Skip the column-0 label if its Sunday is late in its month — the next
+      // column will own the new-month label and the leftover days from the
+      // prior month are visually a partial week.
+      if (w === 0 && cur.getUTCDate() > 7) {
+        lastMonth = m;
+        continue;
+      }
+      labels.push({ x: w * (CELL + GAP), label: MONTH_NAMES[m] });
+      lastMonth = m;
+    }
+  }
+  return labels;
+}
 
 function bucket(count: number, max: number): 0 | 1 | 2 | 3 | 4 {
   if (count === 0) return 0;
@@ -26,6 +81,8 @@ const BUCKET_FILL = [
   'fill-green-600 dark:fill-green-400',
 ];
 
+const LABEL_H = 14;
+
 export function ContributionHeatmap({ days }: Props) {
   const byDate = new Map(days.map((d) => [d.date, d.count]));
   const max = Math.max(1, ...days.map((d) => d.count));
@@ -35,6 +92,8 @@ export function ContributionHeatmap({ days }: Props) {
   end.setDate(end.getDate() + (6 - end.getDay()));
   const start = new Date(end);
   start.setDate(end.getDate() - WEEKS * 7 + 1);
+
+  const monthLabels = computeMonthLabels(start, WEEKS);
 
   const cells: Array<{ x: number; y: number; count: number; date: string }> = [];
   for (let w = 0; w < WEEKS; w++) {
@@ -46,28 +105,78 @@ export function ContributionHeatmap({ days }: Props) {
     }
   }
 
+  const [hovered, setHovered] = useState<{
+    x: number;
+    y: number;
+    date: string;
+    count: number;
+  } | null>(null);
+  useEffect(() => {
+    if (!hovered) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setHovered(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [hovered]);
+
+  const svgVbWidth = WEEKS * (CELL + GAP);
+  const tooltipLeftPct =
+    hovered === null ? 0 : Math.min(Math.max(((hovered.x + CELL / 2) / svgVbWidth) * 100, 8), 92);
+  const tooltipTopPct =
+    hovered === null ? 0 : ((hovered.y + LABEL_H) / (ROWS * (CELL + GAP) + LABEL_H)) * 100;
+
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <svg
-        viewBox={`0 0 ${WEEKS * (CELL + GAP)} ${ROWS * (CELL + GAP)}`}
+        viewBox={`0 0 ${svgVbWidth} ${ROWS * (CELL + GAP) + LABEL_H}`}
         role="img"
         aria-label="GitHub contributions over the last year"
         className="w-full"
       >
-        {cells.map((c) => (
-          <rect
-            key={c.date}
-            x={c.x}
-            y={c.y}
-            width={CELL}
-            height={CELL}
-            rx={2}
-            className={BUCKET_FILL[bucket(c.count, max)]}
+        {monthLabels.map((l) => (
+          <text
+            key={`${l.x}-${l.label}`}
+            x={l.x}
+            y={LABEL_H - 4}
+            className="fill-neutral-500 text-[9px] font-medium"
           >
-            <title>{`${c.date}: ${c.count} contributions`}</title>
-          </rect>
+            {l.label}
+          </text>
         ))}
+        <g transform={`translate(0, ${LABEL_H})`}>
+          {cells.map((c) => (
+            <rect
+              key={c.date}
+              x={c.x}
+              y={c.y}
+              width={CELL}
+              height={CELL}
+              rx={2}
+              tabIndex={0}
+              className={`${BUCKET_FILL[bucket(c.count, max)]} focus:outline-none focus:stroke-neutral-700 dark:focus:stroke-neutral-300`}
+              onMouseEnter={() => setHovered({ x: c.x, y: c.y, date: c.date, count: c.count })}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setHovered({ x: c.x, y: c.y, date: c.date, count: c.count })}
+              onBlur={() => setHovered(null)}
+            >
+              <title>{`${c.date}: ${c.count} ${c.count === 1 ? 'contribution' : 'contributions'}`}</title>
+            </rect>
+          ))}
+        </g>
       </svg>
+      {hovered && (
+        <div
+          role="tooltip"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-neutral-100 shadow-md dark:bg-neutral-100 dark:text-neutral-900"
+          style={{
+            left: `${tooltipLeftPct}%`,
+            top: `${tooltipTopPct}%`,
+          }}
+        >
+          {formatTooltip(hovered.date, hovered.count)}
+        </div>
+      )}
     </div>
   );
 }
