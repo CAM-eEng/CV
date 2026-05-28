@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Activity } from '~/lib/activity/schema';
 
 export function formatTooltip(isoDate: string, count: number): string {
@@ -111,8 +111,6 @@ export function ContributionHeatmap({ days }: Props) {
     date: string;
     count: number;
   } | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!hovered) return;
     const onKey = (e: KeyboardEvent) => {
@@ -125,11 +123,11 @@ export function ContributionHeatmap({ days }: Props) {
   const svgVbWidth = WEEKS * (CELL + GAP);
   const tooltipLeftPct =
     hovered === null ? 0 : Math.min(Math.max(((hovered.x + CELL / 2) / svgVbWidth) * 100, 8), 92);
-  const tooltipTopPx =
+  const tooltipTopPct =
     hovered === null ? 0 : ((hovered.y + LABEL_H) / (ROWS * (CELL + GAP) + LABEL_H)) * 100;
 
   return (
-    <div ref={wrapperRef} className="relative overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <svg
         viewBox={`0 0 ${svgVbWidth} ${ROWS * (CELL + GAP) + LABEL_H}`}
         role="img"
@@ -162,7 +160,7 @@ export function ContributionHeatmap({ days }: Props) {
               onFocus={() => setHovered({ x: c.x, y: c.y, date: c.date, count: c.count })}
               onBlur={() => setHovered(null)}
             >
-              <title>{`${c.date}: ${c.count} contributions`}</title>
+              <title>{`${c.date}: ${c.count} ${c.count === 1 ? 'contribution' : 'contributions'}`}</title>
             </rect>
           ))}
         </g>
@@ -173,7 +171,7 @@ export function ContributionHeatmap({ days }: Props) {
           className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-neutral-100 shadow-md dark:bg-neutral-100 dark:text-neutral-900"
           style={{
             left: `${tooltipLeftPct}%`,
-            top: `${tooltipTopPx}%`,
+            top: `${tooltipTopPct}%`,
           }}
         >
           {formatTooltip(hovered.date, hovered.count)}

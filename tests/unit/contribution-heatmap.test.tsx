@@ -142,7 +142,7 @@ describe('<ContributionHeatmap /> tooltip', () => {
     for (const r of rects) {
       const title = r.querySelector('title');
       expect(title).not.toBeNull();
-      expect(title!.textContent).toMatch(/^\d{4}-\d{2}-\d{2}: \d+ contributions$/);
+      expect(title!.textContent).toMatch(/^\d{4}-\d{2}-\d{2}: \d+ contributions?$/);
     }
   });
 });
