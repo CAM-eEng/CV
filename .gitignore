@@ -1,6 +1,7 @@
 .superpowers/
 .claude/
 .tmp/
+tmp/
 help/
 node_modules/
 dist/
