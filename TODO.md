@@ -96,7 +96,7 @@ Shipped 2026-05-12 across three PRs:
 ### CV body
 
 - [ ] As your role evolves, edit `content/cv.yaml`:
-  - Add new bullets to `work[0].highlights` (LitePoint) as projects ship.
+  - Add new bullets to `work[0].highlights` (LitePoint Corp.) as projects ship.
   - Update `basics.summary` if the position title changes.
   - Bump `skills.yaml` `last_used` dates when you start using something seriously.
 

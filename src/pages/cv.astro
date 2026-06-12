@@ -41,7 +41,13 @@ const ld = [personJsonLd(cv), ...workExperienceJsonLd(cv)];
               <div>
                 <strong>{w.position}</strong>
                 <span class="text-neutral-500"> · </span>
-                <span class="font-mono">{w.name}</span>
+                {w.url ? (
+                  <a href={w.url} class="font-mono underline underline-offset-4" rel="noopener">
+                    {w.name}
+                  </a>
+                ) : (
+                  <span class="font-mono">{w.name}</span>
+                )}
               </div>
               <span class="text-sm text-neutral-500 font-mono">
                 {w.startDate}

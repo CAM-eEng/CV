@@ -3,9 +3,11 @@ import { filter } from '~/lib/ai/moderation';
 
 describe('moderation.filter', () => {
   it('passes safe text through unchanged', () => {
-    const r = filter('Cameron worked on embedded firmware and AI agents at LitePoint.');
+    const r = filter('Cameron worked on embedded firmware and AI agents at LitePoint Corp.');
     expect(r.safe).toBe(true);
-    expect(r.sanitized).toBe('Cameron worked on embedded firmware and AI agents at LitePoint.');
+    expect(r.sanitized).toBe(
+      'Cameron worked on embedded firmware and AI agents at LitePoint Corp.',
+    );
     expect(r.matched).toEqual([]);
   });
 
