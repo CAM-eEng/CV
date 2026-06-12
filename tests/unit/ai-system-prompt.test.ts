@@ -14,7 +14,7 @@ const cv: CV = {
   },
   work: [
     {
-      name: 'LitePoint',
+      name: 'LitePoint Corp.',
       position: 'Engineer',
       startDate: '2020-07',
       summary: 'Test eqpt firmware.',
@@ -35,7 +35,7 @@ describe('buildSystemPrompt', () => {
 
   it('includes every work entry with citation keys', () => {
     const prompt = buildSystemPrompt(cv);
-    expect(prompt).toContain('LitePoint');
+    expect(prompt).toContain('LitePoint Corp.');
     expect(prompt).toContain('[work.0.highlights.0]');
     expect(prompt).toContain('[work.0.highlights.1]');
   });

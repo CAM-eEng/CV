@@ -117,8 +117,8 @@ export function Chat({ cv }: Props) {
         {pendingAssistant && <Message role="assistant" content={pendingAssistant} />}
         {messages.length === 0 && !pendingAssistant && (
           <p className="text-sm text-neutral-500 italic">
-            Ask anything about Cameron's work — embedded experience, the LitePoint AI project, side
-            projects, education.
+            Ask anything about Cameron's work — embedded experience, the LitePoint Corp. AI project,
+            side projects, education.
           </p>
         )}
       </div>

@@ -29,7 +29,13 @@ const activity = await loadActivity(resolve(process.cwd(), 'data/activity.json')
             <div>
               <span class="font-medium">{w.position}</span>
               <span class="text-neutral-500"> at </span>
-              <span class="font-mono">{w.name}</span>
+              {w.url ? (
+                <a href={w.url} class="font-mono underline underline-offset-4" rel="noopener">
+                  {w.name}
+                </a>
+              ) : (
+                <span class="font-mono">{w.name}</span>
+              )}
             </div>
             <span class="text-sm text-neutral-500 font-mono">
               {w.startDate}

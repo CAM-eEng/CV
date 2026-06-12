@@ -5,7 +5,7 @@ basics:
   url: https://cameronhartman.dev
   summary: |
     Software engineer with 6+ years across firmware, RF test instrumentation,
-    hardware design, and hardware+software debugging. Currently at LitePoint
+    hardware design, and hardware+software debugging. Currently at LitePoint Corp.
     leading the engineering team's first AI project (Regression AI Agent
     using Snowflake + Azure Blob Storage + Python + Copilot Studio), driving
     Docker adoption, and shepherding native Linux debugging in Visual Studio
@@ -22,7 +22,7 @@ basics:
       url: https://github.com/CAM-eEng
 
 work:
-  - name: LitePoint
+  - name: LitePoint Corp.
     position: Software (Firmware) Engineer
     url: https://www.litepoint.com
     startDate: '2020-07'
@@ -35,13 +35,13 @@ work:
       - Design of Python test scripts for use in debugging and testing products.
       - Hardware test and debugging of circuit boards and RF devices (0–60 GHz) using Spectrum Analyzer and VNA.
       - Use of SPI protocol to communicate with product devices including EEPROM, digital attenuators, and sensors.
-      - "AI: Leading the LitePoint engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, Python, and Copilot Studio."
+      - "AI: Leading the LitePoint Corp. engineering team on our first AI project — 'Regression AI Agent' — built on Snowflake, Azure Blob Storage, Python, and Copilot Studio."
       - 'DevOps: Drove team adoption of Docker and integrated Jenkins to automate testing frameworks.'
-      - "Linux: Led the LitePoint engineering team's effort to debug Linux natively in Visual Studio using CMake."
+      - "Linux: Led the LitePoint Corp. engineering team's effort to debug Linux natively in Visual Studio using CMake."
 
   - name: MyPitboard Inc.
     position: Hardware Software Design Engineer
-    url: https://mypitboard.com
+    url: https://ca.linkedin.com/company/mypitboard
     startDate: '2020-02'
     endDate: '2020-07'
     summary: |
@@ -55,6 +55,7 @@ work:
 
   - name: Tetra Tech Inc.
     position: Project Engineer, Team Lead — Electrical
+    url: https://www.tetratech.com
     startDate: '2019-07'
     endDate: '2019-11'
     summary: |
@@ -66,6 +67,7 @@ work:
 
   - name: MC Countermeasures Inc.
     position: Hardware Design Engineer
+    url: https://mc-cm.com/
     startDate: '2018-05'
     endDate: '2019-05'
     summary: |
