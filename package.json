@@ -27,7 +27,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "ai": "^6.0.177",
+    "ai": "^7.0.15",
     "astro": "^6.3.3",
     "dompurify": "^3.4.2",
     "isomorphic-dompurify": "^3.12.0",
