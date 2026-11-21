@@ -64,7 +64,7 @@ A 4-segment control mounted in `Nav.astro`, right-aligned, between the existing 
 - Body font: `JetBrains Mono` (already loaded). Headings: same, slightly heavier weight.
 - Headings carry a soft green `text-shadow: 0 0 6px rgba(57,255,20,0.45)`.
 - Hero-section terminal cursor blink: a `::after` pseudo-element with `animation: blink 1s steps(1) infinite`. Suppressed under `@media (prefers-reduced-motion: reduce)`.
-- Scanline overlay opacity is dialed low enough (~0.04) that `/cv` body text remains 4.5:1 contrast against the background. Verified at build time, not runtime (see §6.3).
+- Scanline overlay ships at opacity 0.25 (originally specced at ~0.04); it is dialed so that `/cv` body text remains 4.5:1 contrast against the background. Verified at build time, not runtime (see §6.3).
 - No `<canvas>`, no JS-driven effects. Pure CSS.
 
 ## 4. Architecture
@@ -225,7 +225,7 @@ Pure functions only — no module-level side effects. Pure functions are unit-te
 
 ### 6.3 Build-time guards
 
-A Vitest test computes the WCAG contrast ratio between `--cv-fg` (`#39ff14`) and `--cv-bg` (`#050b06`) and asserts ≥ 4.5:1. The scanline overlay is at ~4% opacity so it doesn't meaningfully shift the effective background luminance — the test ignores the overlay and uses the base bg color, which is a stricter (and simpler) assertion than computing a blended value.
+A Vitest test computes the WCAG contrast ratio between `--cv-fg` (`#39ff14`) and `--cv-bg` (`#050b06`) and asserts ≥ 4.5:1. The scanline overlay ships at 25% opacity (originally specced at ~4%); the test ignores the overlay and uses the base bg color, which is a stricter (and simpler) assertion than computing a blended value.
 
 ### 6.4 Performance
 

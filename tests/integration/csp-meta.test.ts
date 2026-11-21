@@ -4,19 +4,11 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
 describe('Base layout CSP meta', () => {
-  it('lists every approved provider host in connect-src', async () => {
+  it("restricts connect-src to 'self' only", async () => {
     const file = await readFile(resolve(__dirname, '../../src/layouts/Base.astro'), 'utf8');
-    const expected = [
-      "'self'",
-      'https://api.anthropic.com',
-      'https://api.openai.com',
-      'https://generativelanguage.googleapis.com',
-      'https://openrouter.ai',
-      'https://api.github.com',
-    ];
-    for (const host of expected) {
-      expect(file, `connect-src must include ${host}`).toContain(host);
-    }
+    const match = file.match(/connect-src ([^;]*);/);
+    expect(match, 'connect-src directive must exist').not.toBeNull();
+    expect(match![1].trim()).toBe("'self'");
   });
 
   it('forbids inline scripts (no unsafe-inline in script-src)', async () => {
@@ -51,12 +43,12 @@ describe('CSP in built HTML', () => {
   it('emits Content-Security-Policy meta on /cv', async () => {
     const file = await readFile(resolve(__dirname, '../../dist/cv/index.html'), 'utf8');
     expect(file).toMatch(/http-equiv="Content-Security-Policy"/);
-    expect(file).toContain('https://api.anthropic.com');
-    expect(file).toContain('https://openrouter.ai');
+    expect(file).toContain("connect-src 'self';");
+    expect(file).not.toContain('openrouter.ai');
   });
 
-  it('emits Content-Security-Policy meta on /playground', async () => {
-    const file = await readFile(resolve(__dirname, '../../dist/playground/index.html'), 'utf8');
-    expect(file).toMatch(/http-equiv="Content-Security-Policy"/);
+  it('does not ship the removed /playground page', async () => {
+    const { existsSync } = await import('node:fs');
+    expect(existsSync(resolve(__dirname, '../../dist/playground/index.html'))).toBe(false);
   });
 });

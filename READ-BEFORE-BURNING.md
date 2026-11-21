@@ -71,7 +71,7 @@ git diff --staged .github/workflows | grep -oE '@[a-f0-9]{40}' | sort -u | \
 
 ## Before you add a dependency
 
-- It's going to ship JS that runs in every visitor's browser, with access to whatever's in `sessionStorage` (including BYOK keys).
+- It may ship JS that runs in every visitor's browser. Keep the client bundle small and the dependency list short.
 - Check author / weekly downloads / maintenance signal before adding.
 - After install, run `bun pm audit`.
 - Prefer well-known packages over a clever-but-obscure one.
@@ -79,30 +79,13 @@ git diff --staged .github/workflows | grep -oE '@[a-f0-9]{40}' | sort -u | \
 
 ## Before you accept a Dependabot PR
 
-- Read the diff, especially for ecosystem-critical packages (`react`, `astro`, anything in `lib/ai/*`).
+- Read the diff, especially for ecosystem-critical packages (`react`, `astro`, anything the build or the activity refresh depends on).
 - Skim the upstream changelog/release notes.
 - Don't auto-merge. The whole point of pinning is having a checkpoint.
 
-## Before you add a new AI provider
+## Before you add anything that talks to a third-party host from the browser
 
-The CSP allowlist must be updated *in the same PR*, or the provider's domain will be blocked at the browser and the feature will silently fail in production:
-
-```
-connect-src 'self' https://api.anthropic.com https://api.openai.com
-            https://generativelanguage.googleapis.com
-            https://openrouter.ai
-            https://api.github.com
-            https://<NEW-PROVIDER-HOST>;
-```
-
-The CSP lives in `src/layouts/Base.astro` (or wherever the meta tag ends up). There's a Vitest test that pins the allowlist — update that test in the same PR.
-
-## Before you render AI output to the page
-
-- Treat all AI output as untrusted input.
-- Markdown gets rendered through DOMPurify with the strict allowlist in `src/lib/markdown/safe.ts`.
-- **Never** `dangerouslySetInnerHTML` on AI output. **Never** pass it to `eval`, `new Function`, `setTimeout(string, ...)`, or anywhere a string becomes code.
-- The CSP `connect-src` allowlist is the last-line defense if something does slip; don't relax it without thinking through what attacks it stops blocking.
+The site has no browser-side network calls today, so the CSP is `connect-src 'self'`. If you ever add one (analytics, an API, an embed), update the allowlist in `src/layouts/Base.astro` *in the same PR*, or the request will be blocked and the feature will silently fail in production. `tests/integration/csp-meta.test.ts` pins `connect-src` to `'self'` — update that test in the same PR.
 
 ## Before you commit
 
@@ -133,11 +116,7 @@ The CSP lives in `src/layouts/Base.astro` (or wherever the meta tag ends up). Th
 
 ## Things that look like bugs but aren't
 
-- **First chat message shows "cached: 0 tokens".** Expected. Prompt caching kicks in on the *second* request that uses the same prefix. The first request is what populates the cache.
-- **Demo mode responses are pre-baked.** They're not coming from a model. The "stream" is artificial timing for UX consistency. This is intentional — the alternative is paying for inference Cameron's side or showing nothing.
 - **Activity visualizer is one day stale.** It's regenerated nightly, not live. If you push a commit and it doesn't show up immediately, that's by design.
-- **The CV chat won't answer questions outside `cv.yaml`.** The system prompt instructs the model to refuse off-topic questions and cite CV sections only. Adding more knowledge means editing `cv.yaml`, not changing the prompt.
-- **`/oauth/callback` is a blank page for ~200ms.** It's exchanging the auth code, validating state, and scrubbing the URL via `history.replaceState`. The blank period is intentional — no analytics or trackers run before the URL is scrubbed.
 
 ## In case of emergency
 
