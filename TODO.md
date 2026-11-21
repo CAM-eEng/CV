@@ -2,7 +2,7 @@
 
 Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. Items are grouped by urgency. Read `READ-BEFORE-BURNING.md` before any operational change (DNS, secrets, Pages migration).
 
-**Last updated:** 2026-05-12 (after Plan 6 AI playground hardening shipped)
+**Last updated:** 2026-11-20 (AI playground removed; docs brought in line with the code)
 
 ---
 
@@ -11,33 +11,8 @@ Operational, maintenance, and future-enhancement work for `cameronhartman.dev`. 
 Items that were considered and explicitly rejected — recorded so they don't keep getting re-raised. If reopening one, note WHY the original decision is no longer valid.
 
 - **No email on `cameronhartman.dev`** (decided 2026-05-12). The null MX record (`0 .`) declares the domain refuses inbound email, which makes spoofing `@cameronhartman.dev` substantially harder. Cloudflare Email Routing would work fine alongside the GitHub Pages setup, but enabling it requires removing the null MX and that trade — anti-spoofing posture vs. having `info@`/`hello@`/etc. — isn't worth it for a personal CV. Do not propose vanity addresses on this domain without revisiting this decision.
+- **No AI features on the site** (decided 2026-11-20). The BYOK playground (CV chat, JD fit analyzer, OpenRouter OAuth, `/playground`, `/oauth/callback`, `src/lib/ai/*`) was removed entirely, along with its dependencies, and the CSP was narrowed to `connect-src 'self'`. History lives in git and in `docs/superpowers/` (Plans 2 and 6). Do not re-add without revisiting this decision.
 - **No `5easy` project on the site** (decided 2026-05-13). The `5easy` D&D 5e character manager (TypeScript + Supabase, repo private) was originally flagged `featured: true` in `cv.yaml` projects. Cameron decided it doesn't belong on the public CV. The cv.yaml entry has been removed entirely — no Featured Repos carousel card, no `/cv.json` listing, no JSON-LD entry, no `/projects/5easy/` case study. Do not re-add a `5easy` entry without revisiting this decision.
-
----
-
-## 🟢 Plan 6 status — AI playground hardening shipped
-
-Shipped 2026-05-12 in PR [#48](https://github.com/CAM-eEng/CV/pull/48) (squash `5f89d72`). Closes the 11 actionable findings from the 2026-05-12 audit plus INFO #12:
-
-- [x] Anthropic `structured()` dual-message + `<job_description>` delimiter + closing-tag escape (prompt-injection resistance)
-- [x] `maxLength={8000}` + visible counter on Chat and JD textareas
-- [x] Component-mount T&C gate (Chat / JDAnalyzer render placeholder until `hasAcceptedTerms()`; reactive to in-tab `cv:terms-changed` event)
-- [x] DOMPurify: explicit `ALLOWED_URI_REGEXP` (https/http/mailto/relative only); unconditional `rel="noopener noreferrer"` on every `<a>`
-- [x] BYOK key uncontrolled (never in React state) + lock-icon domain badge showing `window.location.hostname`
-- [x] OpenRouter PKCE `assertTrustedOrigin()` gate (allowlist: cameronhartman.dev, cam-eeng.github.io, localhost, 127.0.0.1)
-- [x] All three providers route errors through `formatProviderError` (200-char truncation, whitespace collapsed)
-- [x] Per-session rate caps: 50 chat / 10 JD; history trimmed to last 20 turns before send
-- [x] Output moderation filter (narrow regex blocklist, per-streamed-chunk application)
-- [x] OpenRouter `structured()` gains `HTTP-Referer` / `X-Title` headers to match `chat()`
-
-New lib modules: `src/lib/ai/errors.ts`, `limits.ts`, `moderation.ts`. New tests: 5 unit + 1 integration + 1 E2E; 3 unit suites extended.
-
-### Open follow-ups (small, deferred from review)
-
-- [ ] **Route `exchangeCode()` errors through `formatProviderError`** in `src/lib/ai/openrouter-pkce.ts`. The three provider modules (anthropic/openai/openrouter) use it consistently for chat + structured; the OAuth token-exchange path was missed. Low risk (OpenRouter-controlled endpoint, not user-supplied), but the inconsistency is worth closing.
-- [ ] **Narrow `ProviderStatus` to not hold the BYOK token in React state.** Pre-existing — `ProviderStatus` calls `readSession()` and renders details from the full `Session` object (including `token`), making the token visible to React DevTools. The `KeyPasteForm` uncontrolled-input win is partially undercut. Render only `providerId` (and maybe `model`) instead.
-- [ ] **Spec drift fix.** `docs/superpowers/specs/2026-05-12-ai-playground-hardening.md` §6.1 E2E description says "seeds counter via localStorage to skip 49 real sends" — implementation correctly uses `sessionStorage`. Pure doc fix.
-- [ ] **Integration test for post-mount `cv:terms-changed` transition.** `tests/integration/playground-terms-gate.test.tsx` covers "no terms → placeholder" and "terms pre-set → live UI", but not "mount with no terms → dispatch event → live UI". That's the exact path the mid-stream fix (commit `677d96f`) repaired; the E2E suite caught it, but a focused integration test would be earlier-warning.
 
 ---
 
@@ -51,9 +26,9 @@ Shipped 2026-05-12 across three PRs:
 
 ### Open follow-ups (small, deferred from review)
 
-- [ ] **Arrow-key nav inside the menu.** APG `menuitemradio` pattern expects Up/Down to move focus between items; currently only Tab + click work. Not a WCAG failure but expected by keyboard-power users.
-- [ ] **Trigger `aria-label` flicker on hydration when stored ≠ system.** `useState('system')` renders the trigger with "Color theme: System" until `useEffect` reads localStorage and re-renders. The visual page theme itself never flashes (the bootstrap script handles that pre-paint). Fix: lazy-init `useState(() => getStoredTheme())`.
-- [ ] **Spec drift to clean up.** `docs/superpowers/specs/2026-05-11-cv-themes-design.md` §3.3 and §6.3 still describe the scanline overlay at opacity ~0.04; the implementation ships at 0.25. Pure doc fix.
+- [x] **Arrow-key nav inside the menu** (2026-11-20). Opening the menu focuses the checked item; Up/Down/Home/End move focus (roving `tabIndex`).
+- [ ] **Trigger `aria-label` flicker on hydration when stored ≠ system.** `useState('system')` renders the trigger with "Color theme: System" until `useEffect` reads localStorage and re-renders. The visual page theme itself never flashes (the bootstrap script handles that pre-paint). Note: a lazy `useState(() => getStoredTheme())` would cause an SSR/hydration mismatch (the server has no localStorage). Options: `client:only="react"` (adds a new Astro inline bootstrap — recompute its CSP hash from `dist/`), or accept the one-render flicker.
+- [x] **Spec drift cleaned up** (2026-11-20). Themes spec now records the shipped 0.25 scanline opacity.
 
 ---
 
@@ -61,6 +36,7 @@ Shipped 2026-05-12 across three PRs:
 
 ### PAT rotation (day 80)
 
+- [ ] **Overdue as of 2026-11-20:** `data/activity.json` was last regenerated 2026-05-27, so the nightly refresh has very likely been failing on an expired `GH_API_TOKEN`. Rotate now, then run `gh workflow run refresh-activity.yml` and confirm it opens/merges a PR.
 - [ ] Add a calendar reminder **80 days from token creation** to rotate `GH_API_TOKEN` (and `HTB_API_TOKEN` if applicable). Per `READ-BEFORE-BURNING.md`: never extend an existing PAT; always create a new one, swap the secret via `gh secret set`, then revoke the old PAT.
 
 ### Domain renewal
@@ -80,9 +56,9 @@ Shipped 2026-05-12 across three PRs:
 - `actions/checkout` v6.0.2 · `oven-sh/setup-bun` v2.2.0 · `actions/upload-pages-artifact` v5.0.0 · `actions/deploy-pages` v5.0.0
 - `typescript` 6.0.3 · `vitest` 4.1.5 · `@eslint/js` 10.0.1 · `@astrojs/mdx` 5.0.4
 
-### Still pending
+### Done
 
-- [ ] **Astro 5 → 6 (PR #8 was closed).** Blocked by a Vite-version type incompatibility between Astro 6's bundled Vite and `@tailwindcss/vite`'s current build (a `Plugin<any>` ↔ `PluginOption` mismatch). Re-evaluate when `@tailwindcss/vite` ships a release built against Vite 7+. Will likely also require regenerating the four SHA-256 hashes in `src/layouts/Base.astro`'s CSP since Astro 6 changes its inline hydration bootstrap. Dependabot will re-create the PR when a newer Astro lands.
+- [x] **Astro 5 → 6.** Landed — `package.json` pins `astro ^6.3.3` and `Base.astro` carries the Astro 6 custom-element bootstrap hash.
 
 ---
 
@@ -90,7 +66,7 @@ Shipped 2026-05-12 across three PRs:
 
 ### Project case studies
 
-- [ ] Replace the placeholder body in `content/projects/leddisplay.mdx`. Headings are scaffolded (Problem / Approach / What I built / What I learned) — fill in real narrative. The LedDisplay auto-memory at `~/.claude/projects/-home-dexter/memory/project_leddisplay.md` has detailed technical context (1/16 vs 1/32 scan investigation, panel-compatibility findings, USB-C power constraints, two-step deploy workflow) — but **verify before pasting**: that memory was written when the panel was being investigated as 128×64; Cameron's authoritative repo description (2026-05-18) says 64×64, so some claims in the memory file may no longer apply.
+- [x] `content/projects/leddisplay.mdx` case study written (Problem / Approach / What I built / scan-mode investigation / What I learned).
 - [ ] Decide whether the two historical academic projects (`Testing Interface for RF Amplifier` 2019, `Solar Microinverter` 2018) belong in `cv.yaml`. They were ported from the legacy resume.pdf. If you want them visible: add MDX case studies. If not: remove from `cv.yaml`.
 
 ### CV body
@@ -139,14 +115,9 @@ Each was explicitly out-of-scope or deferred during planning. Pick up if/when va
 
 - [ ] **Mobile horizontal overflow on `/`** ([#44](https://github.com/CAM-eEng/CV/issues/44)). Surfaced during the themes-foundation sweep: at 375px viewport, `body.scrollWidth` is 494px (light/dark/system) or 509px (matrix; +15px from monospace metrics). Pre-existing — not introduced by themes. Likely culprits: `ContributionHeatmap` (53 × 7 fixed cells ≈ 444px floor), `LanguagesDonut` (donut + side-by-side legend), `FreshnessTimeline` (fixed skill-name column). Fix sketch in the issue. Acceptance: `body.scrollWidth ≤ 377` at 375px viewport in every theme.
 
-### Plan 2 polish (deferred)
-
-- [ ] In `src/lib/ai/openrouter.ts` the default model is `google/gemini-2.5-flash-lite:free` — confirm this model name is still current on OpenRouter (model IDs sometimes shift). If you want to default to Claude or GPT, change the `defaultModel`.
-- [ ] The system prompt in `src/lib/ai/system-prompt.ts` is ~25k tokens with the full CV. Once you have more work history, periodically check the token count and consider summarizing older roles.
-
 ### Misc
 
-- [x] **Set the `gh repo edit` description** for `CAM-eEng/CV` so the GitHub repo card reads cleanly. Set 2026-05-12 to: "Online CV at cameronhartman.dev — built on Astro 5 + React 19 + BYOK AI features (Claude, OpenAI, OpenRouter)."
+- [ ] **Update the `gh repo edit` description** for `CAM-eEng/CV` — it still says "Astro 5 + React 19 + BYOK AI features". Suggested: `gh repo edit CAM-eEng/CV --description "Online CV at cameronhartman.dev — built on Astro 6 + React 19."`
 - [ ] Update `CAM-eEng/portfolio` repo description to point at the new site and archive it.
 
 ---
@@ -156,7 +127,7 @@ Each was explicitly out-of-scope or deferred during planning. Pick up if/when va
 - **Spec**: `docs/superpowers/specs/2026-05-09-cv-design.md`
 - **Plans**:
   - `docs/superpowers/plans/2026-05-09-cv-foundation.md` (Plan 1 — shipped, `v1.0-foundation`)
-  - `docs/superpowers/plans/2026-05-11-cv-ai-features.md` (Plan 2 — shipped, `v2.0-ai-features`)
+  - `docs/superpowers/plans/2026-05-11-cv-ai-features.md` (Plan 2 — shipped, `v2.0-ai-features`; removed 2026-11-20)
   - `docs/superpowers/plans/2026-05-11-cv-activity-visualizer.md` (Plan 3 — shipped, `v3.0-activity-visualizer`)
 - **Operational gotchas**: `READ-BEFORE-BURNING.md`
 - **Live site**: `https://cameronhartman.dev`
