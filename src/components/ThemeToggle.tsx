@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
 import {
   type Stored,
   STORAGE_KEY,
@@ -69,6 +75,7 @@ export function ThemeToggle() {
   const [stored, setStored] = useState<Stored>('system');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     const initial = getStoredTheme();
@@ -107,13 +114,32 @@ export function ThemeToggle() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
+    // APG menu pattern: move focus into the menu, onto the checked item.
+    const checked = SEGMENTS.findIndex((seg) => seg.value === stored);
+    itemRefs.current[checked >= 0 ? checked : 0]?.focus();
     document.addEventListener('mousedown', onClickOutside);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onClickOutside);
       document.removeEventListener('keydown', onKey);
     };
+    // Deliberately keyed on `open` only: focus moves when the menu opens.
   }, [open]);
+
+  const onMenuKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const items = itemRefs.current.filter((el): el is HTMLButtonElement => el !== null);
+    if (!items.length) return;
+    const idx = items.indexOf(document.activeElement as HTMLButtonElement);
+    let next: number | null = null;
+    if (e.key === 'ArrowDown') next = idx < 0 ? 0 : (idx + 1) % items.length;
+    else if (e.key === 'ArrowUp')
+      next = idx < 0 ? items.length - 1 : (idx - 1 + items.length) % items.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = items.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    items[next].focus();
+  };
 
   const choose = (v: Stored) => {
     setStored(v);
@@ -149,13 +175,18 @@ export function ThemeToggle() {
         <div
           role="menu"
           aria-label="Color theme"
+          onKeyDown={onMenuKeyDown}
           className="absolute right-0 mt-2 min-w-[140px] rounded-md border border-neutral-200 bg-white p-1 shadow-md dark:border-neutral-800 dark:bg-neutral-900"
         >
-          {SEGMENTS.map((seg) => {
+          {SEGMENTS.map((seg, i) => {
             const active = stored === seg.value;
             return (
               <button
                 key={seg.value}
+                ref={(el) => {
+                  itemRefs.current[i] = el;
+                }}
+                tabIndex={active ? 0 : -1}
                 type="button"
                 role="menuitemradio"
                 aria-checked={active}

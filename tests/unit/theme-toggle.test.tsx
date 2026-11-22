@@ -113,4 +113,20 @@ describe('ThemeToggle', () => {
     const trigger = screen.getByRole('button', { name: /color theme/i });
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
   });
+
+  it('focuses the checked item on open and moves focus with arrow / Home / End keys', () => {
+    render(<ThemeToggle />);
+    openMenu();
+    const menu = screen.getByRole('menu');
+    const name = () => document.activeElement?.getAttribute('aria-label');
+    expect(name()).toBe('System');
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(name()).toBe('Light');
+    fireEvent.keyDown(menu, { key: 'ArrowUp' });
+    expect(name()).toBe('System');
+    fireEvent.keyDown(menu, { key: 'Home' });
+    expect(name()).toBe('Light');
+    fireEvent.keyDown(menu, { key: 'End' });
+    expect(name()).toBe('System');
+  });
 });
