@@ -58,10 +58,22 @@ describe('fetchGithubActivity', () => {
     expect(result.contributions.days[0]).toEqual({ date: '2026-05-04', count: 1 });
   });
 
-  it('throws on non-200', async () => {
+  it('throws on non-200 with the status only, not the response body', async () => {
     fetchSpy.mockResolvedValue(new Response('{"message":"bad credentials"}', { status: 401 }));
-    await expect(fetchGithubActivity({ token: 't', login: 'u' })).rejects.toThrow(
-      /bad credentials/,
+    const err = await fetchGithubActivity({ token: 'secret-token', login: 'u' }).catch((e) => e);
+    expect(err).toBeInstanceOf(Error);
+    expect(err.message).toMatch(/HTTP 401/);
+    expect(err.message).not.toMatch(/bad credentials|secret-token/);
+  });
+
+  it('does not echo GraphQL error messages', async () => {
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ errors: [{ message: 'detail from upstream' }] }), {
+        status: 200,
+      }),
     );
+    const err = await fetchGithubActivity({ token: 'secret-token', login: 'u' }).catch((e) => e);
+    expect(err.message).toMatch(/1 error\(s\)/);
+    expect(err.message).not.toMatch(/detail from upstream|secret-token/);
   });
 });
