@@ -5,6 +5,9 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # Dispatched by refresh-activity.yml on chore/refresh-activity: its PR is
+  # pushed by GITHUB_TOKEN, so the pull_request run is held for approval.
+  workflow_dispatch:
 
 permissions:
   contents: read

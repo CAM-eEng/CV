@@ -5,22 +5,22 @@ on:
     - cron: '0 6 * * *' # 06:00 UTC nightly
   workflow_dispatch:
 
-permissions:
-  contents: write # branch creation for the PR
-  pull-requests: write # open + (auto-)merge the PR
-  actions: write # dispatch deploy.yml after PR merge
+# Deny everything at the workflow level; each job asks for only what it needs.
+permissions: {}
 
 concurrency:
   group: refresh-activity
   cancel-in-progress: false
 
 jobs:
-  refresh:
+  # Job A — runs third-party code (bun install + our script) with the API
+  # secrets, but holds only a read-only GITHUB_TOKEN. Its only output is
+  # data/activity.json, handed to `publish` as an artifact.
+  fetch:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
-      # persist-credentials: false is required by peter-evans/create-pull-request
-      # — without it, actions/checkout v6 leaves a basic-auth header that the
-      # PR-create action's git push then trips over with HTTP 400.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
@@ -40,28 +40,101 @@ jobs:
           HTB_USER_ID: ${{ secrets.HTB_USER_ID }}
         run: bun run refresh-activity
 
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: activity-json
+          path: data/activity.json
+          if-no-files-found: error
+          retention-days: 1
+
+  # Job B — holds the write-scoped GITHUB_TOKEN but no API secrets, and runs
+  # no third-party code: no install step, no third-party actions, only
+  # GitHub-owned actions plus git / gh / jq preinstalled on the runner. It
+  # treats the artifact as data: sanity-checks it, commits it, never runs it.
+  publish:
+    needs: fetch
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # push the refresh branch
+      pull-requests: write # open the PR + enable auto-merge
+      actions: write # dispatch deploy.yml after the merge
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: activity-json
+          path: ${{ runner.temp }}/activity
+
+      # The artifact must be exactly one JSON object of sane size. Full schema
+      # validation already ran in `fetch` (ActivitySchema) and runs again at
+      # build time in deploy.yml (loadActivity).
+      - name: Check artifact
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/activity
+        run: |
+          set -euo pipefail
+          files=$(find "$ARTIFACT_DIR" -type f | wc -l)
+          if [ "$files" -ne 1 ] || [ ! -f "$ARTIFACT_DIR/activity.json" ]; then
+            echo "::error::Expected exactly one file, activity.json, in the artifact."
+            exit 1
+          fi
+          size=$(stat -c %s "$ARTIFACT_DIR/activity.json")
+          if [ "$size" -gt 2000000 ]; then
+            echo "::error::activity.json is $size bytes (limit 2000000)."
+            exit 1
+          fi
+          jq -e 'type == "object"' "$ARTIFACT_DIR/activity.json" > /dev/null
+          cp "$ARTIFACT_DIR/activity.json" data/activity.json
+
       - name: Open / update PR if changed
         id: open-pr
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore(activity): nightly refresh'
-          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
-          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
-          branch: chore/refresh-activity
-          delete-branch: true
-          title: 'chore(activity): nightly refresh'
-          body: |
-            Automated activity refresh from the nightly workflow.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/refresh-activity
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/activity.json; then
+            echo "No change to data/activity.json — nothing to publish."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C "$BRANCH"
+          git add data/activity.json
+          git commit -m 'chore(activity): nightly refresh'
+          git push --force origin "$BRANCH"
 
-            - Bumps `data/activity.json` with current GitHub contributions, repos, languages, and (optionally) HackTheBox stats from `data/htb-manual.json` or the HTB API.
-            - Re-opens / updates if a previous refresh PR is still open.
+          pr=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title 'chore(activity): nightly refresh' \
+              --body "$(printf '%s\n' \
+                'Automated activity refresh from the nightly workflow.' \
+                '' \
+                '- Bumps `data/activity.json` with current GitHub contributions, repos, languages, and (optionally) HackTheBox stats from `data/htb-manual.json` or the HTB API.' \
+                '- Re-opens / updates if a previous refresh PR is still open.')"
+            pr=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number')
+          fi
+          echo "pull-request-number=$pr" >> "$GITHUB_OUTPUT"
+
+      # main requires the `build-and-test` check, but pull_request runs on a PR
+      # pushed by GITHUB_TOKEN are held for maintainer approval
+      # (`action_required`) and never report — so auto-merge would wait
+      # forever. A workflow_dispatch run is not held, and its build-and-test
+      # check run lands on the same head commit, satisfying the requirement.
+      - name: Run CI on the refresh branch
+        if: steps.open-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref chore/refresh-activity
 
       - name: Enable auto-merge on the PR
         if: steps.open-pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge ${{ steps.open-pr.outputs.pull-request-number }} --squash --auto --delete-branch
+          PR: ${{ steps.open-pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR" --squash --auto --delete-branch
 
       # GitHub's anti-recursion guard: pushes attributed to GITHUB_TOKEN
       # (including merges done via auto-merge by github-actions[bot]) do NOT
@@ -72,12 +145,12 @@ jobs:
         if: steps.open-pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.open-pr.outputs.pull-request-number }}
         run: |
-          PR=${{ steps.open-pr.outputs.pull-request-number }}
-          echo "Waiting up to 10 minutes for PR #$PR to auto-merge…"
-          for i in $(seq 1 60); do
+          echo "Waiting up to 20 minutes for PR #$PR to auto-merge (CI runs first)…"
+          for i in $(seq 1 120); do
             state=$(gh pr view "$PR" --json state --jq '.state')
-            echo "  attempt $i/60: state=$state"
+            echo "  attempt $i/120: state=$state"
             case "$state" in
               MERGED)
                 echo "PR merged — dispatching deploy.yml on main."
@@ -91,4 +164,6 @@ jobs:
             esac
             sleep 10
           done
-          echo "::warning::Refresh PR #$PR did not merge within 10 minutes. Merge it manually and then run: gh workflow run deploy.yml --ref main"
+          # Fail loudly: a green run with a stuck PR hid stale data for months.
+          echo "::error::Refresh PR #$PR did not merge within 20 minutes (check its CI). Once merged, run: gh workflow run deploy.yml --ref main"
+          exit 1
