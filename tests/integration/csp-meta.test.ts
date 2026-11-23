@@ -39,12 +39,93 @@ describe('Theme bootstrap script', () => {
   });
 });
 
+const DIST = resolve(__dirname, '../../dist');
+
+async function builtPages(): Promise<string[]> {
+  const { readdir } = await import('node:fs/promises');
+  const entries = await readdir(DIST, { recursive: true });
+  return entries.filter((p) => p.endsWith('.html')).map((p) => resolve(DIST, p));
+}
+
+function cspOf(html: string): Map<string, string[]> {
+  const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/);
+  expect(m, 'CSP meta tag').not.toBeNull();
+  const policy = m![1].replace(/&#39;/g, "'");
+  return new Map(
+    policy
+      .split(';')
+      .map((d) => d.trim().split(/\s+/))
+      .filter((parts) => parts[0])
+      .map(([name, ...values]) => [name, values]),
+  );
+}
+
+const sha256 = (s: string) => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
+
 describe('CSP in built HTML', () => {
-  it('emits Content-Security-Policy meta on /cv', async () => {
-    const file = await readFile(resolve(__dirname, '../../dist/cv/index.html'), 'utf8');
-    expect(file).toMatch(/http-equiv="Content-Security-Policy"/);
-    expect(file).toContain("connect-src 'self';");
-    expect(file).not.toContain('openrouter.ai');
+  it('emits the expected policy on every page', async () => {
+    const pages = await builtPages();
+    expect(pages.length).toBeGreaterThan(0);
+    for (const page of pages) {
+      const csp = cspOf(await readFile(page, 'utf8'));
+      expect(csp.get('default-src'), page).toEqual(["'none'"]);
+      expect(csp.get('connect-src'), page).toEqual(["'self'"]);
+      expect(csp.get('img-src'), page).toEqual(["'self'"]);
+      expect(csp.get('font-src'), page).toEqual(["'self'"]);
+      expect(csp.get('object-src'), page).toEqual(["'none'"]);
+      expect(csp.get('base-uri'), page).toEqual(["'none'"]);
+      expect(csp.get('form-action'), page).toEqual(["'none'"]);
+      expect(csp.get('style-src-attr'), page).toEqual(["'unsafe-inline'"]);
+      for (const d of ['script-src', 'style-src']) {
+        const values = csp.get(d) ?? [];
+        expect(values[0], `${page} ${d}`).toBe("'self'");
+        expect(
+          values.slice(1).every((v) => v.startsWith("'sha256-")),
+          `${page} ${d} allows only 'self' + hashes`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('hashes every inline script and style, and lists no unused hash', async () => {
+    const used = { 'script-src': new Set<string>(), 'style-src': new Set<string>() };
+    let listed: Record<keyof typeof used, string[]> | null = null;
+    for (const page of await builtPages()) {
+      const html = await readFile(page, 'utf8');
+      const csp = cspOf(html);
+      listed = {
+        'script-src': (csp.get('script-src') ?? []).slice(1),
+        'style-src': (csp.get('style-src') ?? []).slice(1),
+      };
+      const inline: Array<[keyof typeof used, RegExp]> = [
+        [
+          'script-src',
+          /<script(?![^>]*\bsrc=)(?![^>]*application\/ld\+json)[^>]*>([\s\S]*?)<\/script>/g,
+        ],
+        ['style-src', /<style[^>]*>([\s\S]*?)<\/style>/g],
+      ];
+      for (const [directive, re] of inline) {
+        for (const [, body] of html.matchAll(re)) {
+          const h = sha256(body);
+          expect(listed[directive], `${page}: inline ${directive} body not hashed`).toContain(h);
+          used[directive].add(h);
+        }
+      }
+    }
+    for (const d of ['script-src', 'style-src'] as const) {
+      expect([...listed![d]].sort(), `stale ${d} hashes`).toEqual([...used[d]].sort());
+    }
+  });
+
+  it('allowlists no AI provider or other third-party host', async () => {
+    for (const page of await builtPages()) {
+      const m = (await readFile(page, 'utf8')).match(
+        /<meta http-equiv="Content-Security-Policy" content="([^"]+)"/,
+      );
+      expect(m![1], page).not.toMatch(
+        /https?:|anthropic|openai|openrouter|googleapis|\*|'unsafe-eval'/,
+      );
+    }
   });
 
   it('does not ship the removed /playground page', async () => {
