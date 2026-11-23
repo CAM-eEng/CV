@@ -66,11 +66,12 @@ async function main() {
     freshness,
   };
 
-  // Validate before writing — fail loud if our own shape drifted.
-  ActivitySchema.parse(activity);
+  // Validate before writing — fail loud if our own shape drifted — and write
+  // the *parsed* result so any keys not in the schema are stripped.
+  const parsed = ActivitySchema.parse(activity);
 
   const outPath = resolve(process.cwd(), 'data/activity.json');
-  await writeFile(outPath, JSON.stringify(activity, null, 2) + '\n', 'utf8');
+  await writeFile(outPath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
   console.log(`Wrote ${outPath}`);
 }
 

@@ -1,12 +1,9 @@
 import { readFile, access } from 'node:fs/promises';
 import { z } from 'zod';
+import { HtbStatsSchema } from './schema';
 
-const HtbManualSchema = z.object({
-  rank: z.string(),
-  points: z.number().int().min(0),
-  ownedMachines: z.number().int().min(0),
-  categories: z.record(z.string(), z.number().int().min(0)),
-});
+// Same bounds as the published activity.json `htb` block.
+const HtbManualSchema = HtbStatsSchema;
 
 export type HtbManual = z.infer<typeof HtbManualSchema>;
 
