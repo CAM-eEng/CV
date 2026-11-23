@@ -127,7 +127,7 @@ Each was explicitly out-of-scope or deferred during planning. Pick up if/when va
 - **Spec**: `docs/superpowers/specs/2026-05-09-cv-design.md`
 - **Plans**:
   - `docs/superpowers/plans/2026-05-09-cv-foundation.md` (Plan 1 — shipped, `v1.0-foundation`)
-  - `docs/superpowers/plans/2026-05-11-cv-ai-features.md` (Plan 2 — shipped, `v2.0-ai-features`; removed 2026-11-20)
+  - Plan 2 (AI features) — shipped as `v2.0-ai-features`, removed 2026-11-20; plan doc deleted, see git tag `v2.0-ai-features`
   - `docs/superpowers/plans/2026-05-11-cv-activity-visualizer.md` (Plan 3 — shipped, `v3.0-activity-visualizer`)
 - **Operational gotchas**: `READ-BEFORE-BURNING.md`
 - **Live site**: `https://cameronhartman.dev`
