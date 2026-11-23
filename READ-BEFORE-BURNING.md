@@ -13,7 +13,7 @@ The full design is at `docs/superpowers/specs/2026-05-09-cv-design.md`. This fil
 1. **CAA first.** Add `cameronhartman.dev. CAA 0 issue "letsencrypt.org"` *before* asking GitHub Pages for a certificate. Pages uses Let's Encrypt; without the CAA record any CA could potentially issue a cert for your domain.
 2. **Email lockdown next.** Even though we don't send mail, set these up *before* the domain resolves anywhere — otherwise there's a window where anyone can spoof `cameron@cameronhartman.dev` and pass SPF:
    - `cameronhartman.dev. TXT "v=spf1 -all"` — no one is authorized to send mail.
-   - `_dmarc.cameronhartman.dev. TXT "v=DMARC1; p=reject; rua=mailto:cameron.hartman081@gmail.com"`
+   - `_dmarc.cameronhartman.dev. TXT "v=DMARC1; p=reject; sp=reject;"` — no `rua=`. The domain sends no mail, so reports would only show spoofing attempts. If you want them, use Cloudflare DMARC Management, which provides a reporting address with the cross-domain authorization RFC 7489 §7.1 requires. **Never put a personal address here:** DMARC records are public and get harvested.
    - `cameronhartman.dev. MX 0 .` — RFC 7505 null MX, "this domain accepts no mail".
 3. **CNAME last.** Only after the records above are live, point `cameronhartman.dev. CNAME cam-eeng.github.io.` and add a `CNAME` file at the repo root containing `cameronhartman.dev`.
 4. **Registrar 2FA.** Hardware key. Not SMS. Not authenticator-app-only if you can avoid it. Domain takeover via registrar account compromise is the single highest-impact failure mode.

@@ -3,7 +3,10 @@ interface Props {
   data: unknown;
 }
 const { data } = Astro.props;
-const json = JSON.stringify(data);
+// set:html writes this raw into a <script>, and JSON.stringify doesn't escape
+// "<", so a "</script>" inside any string value would end the tag early.
+// "<" is the same character to a JSON parser, but not to the HTML parser.
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
 ---
 
 <script is:inline type="application/ld+json" set:html={json} />
