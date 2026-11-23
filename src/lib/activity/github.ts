@@ -88,10 +88,12 @@ async function fetchContributions(
     method: 'POST',
     body: JSON.stringify({ query, variables: { login } }),
   });
-  if (!res.ok) throw new Error(`GitHub GraphQL error (${res.status}): ${await res.text()}`);
+  // Error messages carry only the HTTP status / error count — never the
+  // response body, which can echo request details into public CI logs.
+  if (!res.ok) throw new Error(`GitHub GraphQL request failed (HTTP ${res.status})`);
   const json = (await res.json()) as GhContributionsResponse;
   if (json.errors?.length)
-    throw new Error(`GitHub GraphQL errors: ${json.errors.map((e) => e.message).join('; ')}`);
+    throw new Error(`GitHub GraphQL returned ${json.errors.length} error(s) (HTTP ${res.status})`);
   const cal = json.data?.user?.contributionsCollection?.contributionCalendar;
   const days: ContributionDay[] = [];
   for (const week of cal?.weeks ?? []) {
@@ -107,7 +109,7 @@ async function fetchRepos(token: string, login: string): Promise<Repo[]> {
     `${REST_BASE}/users/${login}/repos?per_page=100&sort=pushed&type=public`,
     token,
   );
-  if (!res.ok) throw new Error(`GitHub repos error (${res.status}): ${await res.text()}`);
+  if (!res.ok) throw new Error(`GitHub repos request failed (HTTP ${res.status})`);
   const json = (await res.json()) as GhRepo[];
   return json
     .filter((r) => !r.fork && !r.archived)
