@@ -7,6 +7,7 @@ import { fetchHtbStats } from '~/lib/activity/htb';
 import { loadHtbManual } from '~/lib/activity/htb-manual';
 import { mergeFreshness } from '~/lib/activity/freshness';
 import { loadSkills } from '~/lib/content/skills-loader';
+import { safeErrorMessage } from '~/lib/activity/safe-error';
 
 const REQUIRED_ENV = ['GH_API_TOKEN', 'GH_LOGIN'] as const;
 
@@ -38,10 +39,7 @@ async function main() {
         userId: process.env.HTB_USER_ID,
       });
     } catch (e) {
-      console.error(
-        'HTB API fetch failed, will try manual fallback:',
-        e instanceof Error ? e.message : String(e),
-      );
+      console.error(`HTB API fetch failed, will try manual fallback: ${safeErrorMessage(e)}`);
     }
   }
   if (!htb) {
@@ -66,15 +64,18 @@ async function main() {
     freshness,
   };
 
-  // Validate before writing — fail loud if our own shape drifted.
-  ActivitySchema.parse(activity);
+  // Validate before writing — fail loud if our own shape drifted — and write
+  // the *parsed* result so any keys not in the schema are stripped.
+  const parsed = ActivitySchema.parse(activity);
 
   const outPath = resolve(process.cwd(), 'data/activity.json');
-  await writeFile(outPath, JSON.stringify(activity, null, 2) + '\n', 'utf8');
+  await writeFile(outPath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
   console.log(`Wrote ${outPath}`);
 }
 
+// Logs from this script are public (GitHub Actions on a public repo). Print a
+// short message only — never the error object, its stack, or its `cause`.
 main().catch((e) => {
-  console.error(e);
+  console.error(`refresh-activity failed: ${safeErrorMessage(e)}`);
   process.exit(1);
 });
