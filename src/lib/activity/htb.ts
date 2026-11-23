@@ -115,11 +115,17 @@ export async function fetchHtbStats(opts: { token: string; userId?: string }): P
     );
   }
 
+  // Error messages carry only the HTTP status — never the response body, which
+  // can echo request details into public CI logs.
   const profileRes = await htbFetch(`/user/profile/basic/${userId}`, opts.token);
   if (!profileRes.ok) {
-    throw new Error(`HTB profile error (${profileRes.status}): ${await profileRes.text()}`);
+    throw new Error(`HTB profile request failed (HTTP ${profileRes.status})`);
   }
-  const profile = ProfileSchema.parse(await profileRes.json());
+  const profileParse = ProfileSchema.safeParse(await profileRes.json());
+  if (!profileParse.success) {
+    throw new Error(`HTB profile response had an unexpected shape (HTTP ${profileRes.status})`);
+  }
+  const profile = profileParse.data;
 
   // Per HTB's profile-card UI, the headline "machines owned" is the count of
   // root pwns (system_owns). We surface that. If the field is absent on the
