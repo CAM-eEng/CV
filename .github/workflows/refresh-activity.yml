@@ -118,6 +118,17 @@ jobs:
           fi
           echo "pull-request-number=$pr" >> "$GITHUB_OUTPUT"
 
+      # main requires the `build-and-test` check, but pull_request runs on a PR
+      # pushed by GITHUB_TOKEN are held for maintainer approval
+      # (`action_required`) and never report — so auto-merge would wait
+      # forever. A workflow_dispatch run is not held, and its build-and-test
+      # check run lands on the same head commit, satisfying the requirement.
+      - name: Run CI on the refresh branch
+        if: steps.open-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref chore/refresh-activity
+
       - name: Enable auto-merge on the PR
         if: steps.open-pr.outputs.pull-request-number != ''
         env:
@@ -136,10 +147,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ steps.open-pr.outputs.pull-request-number }}
         run: |
-          echo "Waiting up to 10 minutes for PR #$PR to auto-merge…"
-          for i in $(seq 1 60); do
+          echo "Waiting up to 20 minutes for PR #$PR to auto-merge (CI runs first)…"
+          for i in $(seq 1 120); do
             state=$(gh pr view "$PR" --json state --jq '.state')
-            echo "  attempt $i/60: state=$state"
+            echo "  attempt $i/120: state=$state"
             case "$state" in
               MERGED)
                 echo "PR merged — dispatching deploy.yml on main."
@@ -153,4 +164,6 @@ jobs:
             esac
             sleep 10
           done
-          echo "::warning::Refresh PR #$PR did not merge within 10 minutes. Merge it manually and then run: gh workflow run deploy.yml --ref main"
+          # Fail loudly: a green run with a stuck PR hid stale data for months.
+          echo "::error::Refresh PR #$PR did not merge within 20 minutes (check its CI). Once merged, run: gh workflow run deploy.yml --ref main"
+          exit 1
