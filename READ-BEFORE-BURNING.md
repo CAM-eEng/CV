@@ -73,7 +73,7 @@ git diff --staged .github/workflows | grep -oE '@[a-f0-9]{40}' | sort -u | \
 
 - It may ship JS that runs in every visitor's browser. Keep the client bundle small and the dependency list short.
 - Check author / weekly downloads / maintenance signal before adding.
-- After install, run `bun pm audit`.
+- After install, run `bun run audit` (`bun audit --audit-level=high`; CI runs it too).
 - Prefer well-known packages over a clever-but-obscure one.
 - Update `bun.lock` and commit.
 

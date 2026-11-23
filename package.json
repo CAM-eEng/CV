@@ -12,7 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "audit": "bun pm audit",
+    "audit": "bun audit --audit-level=high",
     "refresh-activity": "bun run scripts/refresh-activity.ts"
   },
   "dependencies": {
