@@ -14,6 +14,23 @@ function relativeDate(iso: string): string {
   return `${Math.floor(days / 365)}y ago`;
 }
 
+/**
+ * Returns the URL only if it is an https://github.com/ link; otherwise
+ * undefined, and the card renders without a link. The activity schema already
+ * enforces this, but the URL comes from a third-party API and lands in an
+ * href, so the renderer checks again rather than trusting upstream.
+ */
+export function safeRepoHref(url: string): string | undefined {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:' || u.hostname !== 'github.com') return undefined;
+    if (u.username || u.password || u.port) return undefined;
+    return u.href;
+  } catch {
+    return undefined;
+  }
+}
+
 export function filterFeaturedRepos(
   repos: Activity['repos'],
   projects: CV['projects'],
@@ -34,9 +51,10 @@ export function FeaturedRepoCarousel({ repos, projects }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {cards.map((r) => (
+        // An <a> with no href (unsafe URL) is an inert placeholder, not a link.
         <a
           key={r.name}
-          href={r.url}
+          href={safeRepoHref(r.url)}
           className={`block border border-neutral-200 dark:border-neutral-800 rounded p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 ${singleCardClass}`}
         >
           <div className="flex items-baseline justify-between mb-1">
