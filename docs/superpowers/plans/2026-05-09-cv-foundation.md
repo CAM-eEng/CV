@@ -1,5 +1,7 @@
 # CV Foundation Implementation Plan
 
+> **Historical (2026-11-20):** this plan predates the removal of the BYOK AI features (#92). Its CSP snippet allowlists AI provider hosts; the live policy in `src/layouts/Base.astro` does not, and `connect-src` is `'self'` only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build and deploy a static online CV at `cameronhartman.dev` — Astro 5 scaffold, content layer in `cv.yaml`/`skills.yaml`/MDX, all static pages (`/`, `/cv`, `/projects`, `/projects/<slug>`, `/contact`, `/security`), build-time generated artifacts (`/cv.json`, `/llms.txt`, JSON-LD, sitemap), CI/CD via GitHub Actions, live on GitHub Pages with custom domain. **No AI features yet** — those land in Plan 2.
